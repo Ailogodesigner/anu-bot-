@@ -285,20 +285,20 @@ export default function TicketDetailPage() {
           </div>
         </div>
 
-        {/* Action Buttons Toolbar */}
+        {/* Action Buttons Toolbar (Strict 2-Color Architecture) */}
         <div className="flex flex-wrap items-center gap-2">
           {ticket.status !== "RESOLVED" && ticket.status !== "CLOSED" ? (
             <>
               <button
                 onClick={() => setShowEscalateModal(true)}
-                className="px-3 py-1.5 rounded-lg bg-warning/15 hover:bg-warning/25 border border-warning/30 text-warning text-xs font-semibold flex items-center gap-1.5 transition"
+                className="px-3.5 py-1.5 rounded-lg bg-card-secondary hover:bg-card border border-border hover:border-accent/40 text-accent-light text-xs font-semibold flex items-center gap-1.5 transition"
               >
-                <AlertTriangle className="w-3.5 h-3.5" />
+                <AlertTriangle className="w-3.5 h-3.5 text-accent" />
                 <span>Escalate</span>
               </button>
               <button
                 onClick={() => setShowResolveModal(true)}
-                className="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1.5 transition"
+                className="px-3.5 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-black text-xs font-bold flex items-center gap-1.5 transition shadow-glow"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Resolve</span>
@@ -307,7 +307,7 @@ export default function TicketDetailPage() {
           ) : (
             <button
               onClick={handleReopen}
-              className="px-3 py-1.5 rounded-lg bg-accent/15 hover:bg-accent/25 border border-accent/30 text-accent text-xs font-semibold transition"
+              className="px-3.5 py-1.5 rounded-lg bg-card-secondary border border-border hover:border-accent text-accent text-xs font-semibold transition"
             >
               Reopen Ticket
             </button>

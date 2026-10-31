@@ -97,11 +97,31 @@ client.on(Events.MessageCreate, async (message) => {
   if (!ticket) return;
 
   // Determine if sender is staff
-  const staffMember = await prisma.user.findUnique({
+  let staffMember = await prisma.user.findUnique({
     where: { discordId: message.author.id },
   });
 
-  const isStaff = !!(staffMember && staffMember.role !== "VIEWER");
+  const member = message.member;
+  const isGuildStaff = member?.permissions.has("ManageChannels") || 
+    member?.roles.cache.some((r) => {
+      const n = r.name.toLowerCase();
+      return n.includes("staff") || n.includes("support") || n.includes("admin") || n.includes("lead") || n.includes("mod");
+    });
+
+  if (!staffMember && isGuildStaff) {
+    staffMember = await prisma.user.create({
+      data: {
+        discordId: message.author.id,
+        username: message.author.username,
+        avatar: message.author.displayAvatarURL(),
+        role: member?.permissions.has("Administrator") ? "ADMIN" : "SUPPORT_AGENT",
+        status: "ONLINE",
+        lastActiveAt: new Date(),
+      },
+    });
+  }
+
+  const isStaff = !!(staffMember && staffMember.role !== "VIEWER") || !!isGuildStaff;
 
   // 1. Record incoming message in database
   await prisma.ticketMessage.create({
@@ -118,11 +138,24 @@ client.on(Events.MessageCreate, async (message) => {
     },
   });
 
-  // If staff replied, update ticket status to STAFF_REPLY
-  if (isStaff) {
+  // If staff replied, track staff activity and update ticket
+  if (isStaff && staffMember) {
+    const isFirstClaim = !ticket.assignedStaffId;
     await prisma.ticket.update({
       where: { id: ticket.id },
-      data: { status: "STAFF_REPLY" },
+      data: {
+        status: "STAFF_REPLY",
+        ...(isFirstClaim ? { assignedStaffId: staffMember.id, claimedAt: new Date() } : {}),
+      },
+    });
+
+    await prisma.user.update({
+      where: { id: staffMember.id },
+      data: {
+        lastActiveAt: new Date(),
+        status: "ONLINE",
+        ...(isFirstClaim ? { activeTicketsCount: { increment: 1 } } : {}),
+      },
     });
     return;
   }

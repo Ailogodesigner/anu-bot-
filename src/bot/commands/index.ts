@@ -101,6 +101,29 @@ export const slashCommands = [
     .setDescription("View live bot health, uptime, and VPS support queue metrics"),
 
   new SlashCommandBuilder()
+    .setName("staff")
+    .setDescription("Staff shift management and live telemetry tracking")
+    .addSubcommand((sub) =>
+      sub
+        .setName("status")
+        .setDescription("Update your active staff shift status")
+        .addStringOption((opt) =>
+          opt
+            .setName("state")
+            .setDescription("Your shift availability")
+            .setRequired(true)
+            .addChoices(
+              { name: "Online (Active Shift)", value: "ONLINE" },
+              { name: "Busy (Handling Priority Task)", value: "BUSY" },
+              { name: "On Break (Temporarily Away)", value: "ON_BREAK" },
+              { name: "Offline (Shift Ended)", value: "OFFLINE" }
+            )
+        )
+    )
+    .addSubcommand((sub) => sub.setName("stats").setDescription("View your personal ticket resolution performance"))
+    .addSubcommand((sub) => sub.setName("leaderboard").setDescription("View staff rankings for server 1528401268354056293")),
+
+  new SlashCommandBuilder()
     .setName("help")
     .setDescription("View command instructions and VPS support guidelines"),
 ];
@@ -472,6 +495,107 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
 
     await interaction.editReply({ embeds: [embed] });
     return;
+  }
+
+  if (commandName === "staff") {
+    await interaction.deferReply({ ephemeral: true });
+    const sub = interaction.options.getSubcommand();
+
+    let staffMember = await prisma.user.findUnique({
+      where: { discordId: interaction.user.id },
+      include: {
+        assignedTickets: {
+          where: { status: { in: ["OPEN", "AWAITING_STAFF", "STAFF_REPLY"] } },
+        },
+      },
+    });
+
+    if (sub === "status") {
+      const newState = interaction.options.getString("state", true);
+
+      if (!staffMember) {
+        staffMember = await prisma.user.create({
+          data: {
+            discordId: interaction.user.id,
+            username: interaction.user.username,
+            avatar: interaction.user.displayAvatarURL(),
+            role: "SUPPORT_AGENT",
+            status: newState,
+            lastActiveAt: new Date(),
+          },
+          include: { assignedTickets: true },
+        });
+      } else {
+        await prisma.user.update({
+          where: { id: staffMember.id },
+          data: { status: newState, lastActiveAt: new Date() },
+        });
+      }
+
+      const embed = new EmbedBuilder()
+        .setTitle("⏱️ Staff Shift Status Updated")
+        .setDescription(`Your shift status on server **1528401268354056293** is now **${newState}**. The Web Console has been updated.`)
+        .setColor(0x00f2fe)
+        .addFields(
+          { name: "Staff Member", value: `<@${interaction.user.id}>`, inline: true },
+          { name: "Current Status", value: `\`${newState}\``, inline: true },
+          { name: "Active Tickets", value: `\`${staffMember.assignedTickets?.length || 0}\``, inline: true }
+        )
+        .setTimestamp();
+
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
+
+    if (sub === "stats") {
+      if (!staffMember) {
+        await interaction.editReply({
+          content: "❌ You are not registered in the staff roster yet. Claim a ticket or set your `/staff status` to register.",
+        });
+        return;
+      }
+
+      const embed = new EmbedBuilder()
+        .setTitle(`📊 Staff Performance: ${staffMember.username}`)
+        .setDescription(`Telemetry for server **1528401268354056293**`)
+        .setColor(0x00f2fe)
+        .addFields(
+          { name: "Staff Role", value: `\`${staffMember.role}\``, inline: true },
+          { name: "Shift Status", value: `\`${staffMember.status}\``, inline: true },
+          { name: "Active Tickets", value: `\`${staffMember.activeTicketsCount}\``, inline: true },
+          { name: "Total Resolved", value: `\`${staffMember.totalResolvedTickets}\``, inline: true },
+          { name: "CSAT Rating", value: `\`⭐ ${staffMember.avgRating.toFixed(1)} / 5.0\``, inline: true },
+          { name: "Last Active", value: staffMember.lastActiveAt ? `<t:${Math.floor(staffMember.lastActiveAt.getTime() / 1000)}:R>` : "N/A", inline: true }
+        )
+        .setFooter({ text: "Cavrix Cloud Staff Telemetry • Server 1528401268354056293" })
+        .setTimestamp();
+
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
+
+    if (sub === "leaderboard") {
+      const topStaff = await prisma.user.findMany({
+        where: { role: { not: "VIEWER" } },
+        orderBy: [{ totalResolvedTickets: "desc" }, { avgRating: "desc" }],
+        take: 10,
+      });
+
+      const lines = topStaff.map((s, idx) => {
+        const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `**#${idx + 1}**`;
+        return `${medal} **${s.username}** — \`${s.totalResolvedTickets} resolved\` • ⭐ \`${s.avgRating.toFixed(1)}\` • \`[${s.status}]\``;
+      });
+
+      const embed = new EmbedBuilder()
+        .setTitle("🏆 Staff Performance Leaderboard")
+        .setDescription(`Live resolution rankings for server **1528401268354056293**:\n\n${lines.join("\n") || "No staff activity recorded yet."}`)
+        .setColor(0x00f2fe)
+        .setFooter({ text: "Cavrix Cloud NetOps • Live Rankings" })
+        .setTimestamp();
+
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
   }
 
   if (commandName === "help") {

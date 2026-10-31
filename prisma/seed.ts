@@ -54,13 +54,16 @@ async function main() {
     },
   });
 
-  // 2. Guild Configuration
+  // 2. Guild Configuration (Dedicated Target Server 1528401268354056293)
   await prisma.guildConfig.upsert({
-    where: { guildId: "123456789012345678" },
-    update: {},
+    where: { guildId: "1528401268354056293" },
+    update: {
+      guildId: "1528401268354056293",
+      guildName: "Cavrix Cloud Server",
+    },
     create: {
-      guildId: "123456789012345678",
-      guildName: "Cavrix Cloud",
+      guildId: "1528401268354056293",
+      guildName: "Cavrix Cloud Server",
       ticketCategoryId: "990000000000000001",
       transcriptChannelId: "990000000000000002",
       auditLogChannelId: "990000000000000003",

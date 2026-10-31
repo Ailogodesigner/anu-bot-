@@ -164,19 +164,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
         </div>
 
-        {/* Status Card in Sidebar */}
+        {/* Server & Gateway Status Card in Sidebar */}
         <div className="p-3 border-t border-border">
-          <div className="p-3 rounded-lg bg-card border border-border">
-            <div className="flex items-center justify-between text-xs mb-2">
-              <span className="text-muted">Gateway Status</span>
-              <span className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-400">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <div className="p-3 rounded-xl bg-card border border-border space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted font-medium">Server Gateway</span>
+              <span className="flex items-center gap-1.5 text-[11px] font-mono text-accent font-semibold">
+                <span className="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
                 ACTIVE
               </span>
             </div>
-            <div className="text-[11px] text-muted-foreground flex items-center justify-between">
-              <span>Node KVM-FRA01</span>
-              <span>10 Gbps</span>
+            <div className="text-[10px] text-muted font-mono flex items-center justify-between border-t border-border/60 pt-2">
+              <span className="text-foreground font-semibold">Server ID</span>
+              <span className="text-accent-light">1528401268354056293</span>
             </div>
           </div>
         </div>

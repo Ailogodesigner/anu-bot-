@@ -10,22 +10,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0B0F19",
+        background: "#080B11",
         card: {
-          DEFAULT: "#161F30",
-          hover: "#1E293B",
-          secondary: "#1E293B",
+          DEFAULT: "#0F1523",
+          hover: "#151E30",
+          secondary: "#151E30",
         },
         border: {
-          DEFAULT: "#1E293B",
-          subtle: "#2A374A",
-          accent: "#06B6D4",
+          DEFAULT: "#1A2438",
+          subtle: "#222F47",
+          accent: "#00F2FE",
         },
         accent: {
-          DEFAULT: "#06B6D4",
-          hover: "#0891B2",
+          DEFAULT: "#00F2FE",
+          hover: "#06B6D4",
           light: "#00F5D4",
-          glow: "rgba(6, 182, 212, 0.15)",
+          glow: "rgba(0, 242, 254, 0.2)",
         },
         foreground: "#F8FAFC",
         muted: {
@@ -33,12 +33,12 @@ const config: Config = {
           foreground: "#64748B",
         },
         success: {
-          DEFAULT: "#10B981",
-          foreground: "#ECFDF5",
+          DEFAULT: "#00F5D4",
+          foreground: "#080B11",
         },
         warning: {
-          DEFAULT: "#F59E0B",
-          foreground: "#FFFBEB",
+          DEFAULT: "#00F2FE",
+          foreground: "#080B11",
         },
         danger: {
           DEFAULT: "#EF4444",
@@ -50,10 +50,10 @@ const config: Config = {
         mono: ["JetBrains Mono", "Fira Code", "monospace"],
       },
       boxShadow: {
-        subtle: "0 1px 3px 0 rgba(0, 0, 0, 0.37), 0 1px 2px -1px rgba(0, 0, 0, 0.37)",
-        card: "0 4px 20px -2px rgba(0, 0, 0, 0.5)",
-        glow: "0 0 25px -5px rgba(6, 182, 212, 0.25)",
-        glowCyan: "0 0 25px -5px rgba(0, 245, 212, 0.25)",
+        subtle: "0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.5)",
+        card: "0 4px 20px -2px rgba(0, 0, 0, 0.7)",
+        glow: "0 0 25px -5px rgba(0, 242, 254, 0.3)",
+        glowCyan: "0 0 25px -5px rgba(0, 245, 212, 0.3)",
       },
     },
   },

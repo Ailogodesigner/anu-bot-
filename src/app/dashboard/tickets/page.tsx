@@ -287,10 +287,8 @@ export default function TicketQueuePage() {
                     <td className="py-3 px-4">
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                          t.priority === "URGENT"
-                            ? "bg-danger/10 text-danger border border-danger/30"
-                            : t.priority === "HIGH"
-                            ? "bg-warning/10 text-warning border border-warning/30"
+                          t.priority === "URGENT" || t.priority === "HIGH"
+                            ? "bg-accent/20 text-accent border border-accent/40"
                             : "bg-card-secondary text-muted border border-border"
                         }`}
                       >
@@ -299,14 +297,14 @@ export default function TicketQueuePage() {
                     </td>
                     <td className="py-3 px-4">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium font-mono ${
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium font-mono ${
                           t.status === "AWAITING_STAFF"
-                            ? "bg-warning/15 text-warning border border-warning/30 animate-pulse"
+                            ? "bg-accent/20 text-accent border border-accent/40 animate-pulse"
                             : t.status === "RESOLVED"
-                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                            ? "bg-card-secondary text-accent-light border border-border"
                             : t.status === "CLOSED"
-                            ? "bg-slate-700/20 text-muted"
-                            : "bg-accent/15 text-accent-light border border-accent/30"
+                            ? "bg-card-secondary text-muted"
+                            : "bg-accent/10 text-accent-light border border-accent/20"
                         }`}
                       >
                         {t.status.replace("_", " ")}
