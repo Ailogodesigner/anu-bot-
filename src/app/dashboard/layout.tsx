@@ -23,6 +23,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  Globe,
 } from "lucide-react";
 
 interface UserProfile {
@@ -151,6 +152,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
+        {/* Live Public Website Link */}
+        <div className="px-3 pt-2">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-card-secondary/70 hover:bg-card border border-border text-xs text-muted hover:text-accent transition font-medium"
+          >
+            <Globe className="w-3.5 h-3.5 text-accent" />
+            <span>Public Website</span>
+            <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
+          </Link>
+        </div>
+
         {/* Status Card in Sidebar */}
         <div className="p-3 border-t border-border">
           <div className="p-3 rounded-lg bg-card border border-border">
@@ -214,6 +227,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card border border-border text-xs text-muted hover:text-foreground transition"
+            >
+              <Globe className="w-3.5 h-3.5 text-accent" />
+              <span>Public Website</span>
+            </Link>
+
             {/* Dev Role Switcher */}
             <div className="relative">
               <button
