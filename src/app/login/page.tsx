@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   Server,
   Shield,
@@ -10,18 +9,47 @@ import {
   ArrowRight,
   CheckCircle2,
   AlertCircle,
-  ArrowLeft,
-  Sparkles,
+  Eye,
+  EyeOff,
   KeyRound,
   ShieldCheck,
   Terminal,
+  Cpu,
 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"discord" | "demo">("discord");
+  const [activeTab, setActiveTab] = useState<"password" | "discord" | "demo">("password");
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [loadingRole, setLoadingRole] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+    setSubmitting(true);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        router.push("/dashboard");
+      } else {
+        setErrorMsg(data.error || "Authentication failed. Check your master credentials.");
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "Network error connecting to login service.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleDevLogin = async (role: "ADMIN" | "SUPPORT_LEAD" | "SUPPORT_AGENT" | "VIEWER") => {
     setLoadingRole(role);
@@ -58,11 +86,12 @@ export default function LoginPage() {
       <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex items-center justify-between relative z-10">
         <div className="flex items-center gap-2 text-xs font-mono text-accent">
           <span className="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-          <span>Target Server: 1528401268354056293</span>
+          <span>Target Server: Cavrix Core (1519559734808674444)</span>
         </div>
 
         <div className="flex items-center gap-2 text-xs font-mono text-muted">
-          <span>Gateway: Online</span>
+          <Cpu className="w-3.5 h-3.5 text-accent" />
+          <span>Self-Hosting Gateway: Active</span>
         </div>
       </div>
 
@@ -74,7 +103,7 @@ export default function LoginPage() {
             <Server className="w-7 h-7 text-accent" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">Cavrix Bot Control Panel</h1>
-          <p className="text-xs text-muted mt-1">Management Portal for Server 1528401268354056293</p>
+          <p className="text-xs text-muted mt-1">Direct Master Access & Hosting Administration</p>
         </div>
 
         {/* Card Container */}
@@ -87,34 +116,118 @@ export default function LoginPage() {
           )}
 
           {/* Mode Switcher Tabs */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-card-secondary rounded-xl border border-border text-xs font-semibold">
+          <div className="grid grid-cols-3 gap-1 p-1 bg-card-secondary rounded-xl border border-border text-[11px] font-semibold">
             <button
+              type="button"
+              onClick={() => setActiveTab("password")}
+              className={`py-2 px-2 rounded-lg transition text-center ${
+                activeTab === "password"
+                  ? "bg-accent text-black font-bold shadow-subtle"
+                  : "text-muted hover:text-foreground"
+              }`}
+            >
+              Owner Pass
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab("discord")}
-              className={`py-2 px-3 rounded-lg transition ${
+              className={`py-2 px-2 rounded-lg transition text-center ${
                 activeTab === "discord"
                   ? "bg-accent text-black font-bold shadow-subtle"
                   : "text-muted hover:text-foreground"
               }`}
             >
-              Discord Staff SSO
+              Discord SSO
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab("demo")}
-              className={`py-2 px-3 rounded-lg transition ${
+              className={`py-2 px-2 rounded-lg transition text-center ${
                 activeTab === "demo"
                   ? "bg-accent text-black font-bold shadow-subtle"
                   : "text-muted hover:text-foreground"
               }`}
             >
-              Staff Role Sandbox
+              Role Sandbox
             </button>
           </div>
 
-          {/* Tab 1: Official Discord Staff SSO */}
+          {/* Tab 1: Master Password Login (Default) */}
+          {activeTab === "password" && (
+            <form onSubmit={handlePasswordLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <Terminal className="w-3.5 h-3.5 text-accent" />
+                  <span>Master Username</span>
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="admin"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-card-secondary border border-border focus:border-accent focus:ring-1 focus:ring-accent outline-none text-xs text-foreground placeholder:text-muted/60 transition"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-accent" />
+                    <span>Server Owner Passcode</span>
+                  </span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter ADMIN_PASSWORD"
+                    required
+                    className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-card-secondary border border-border focus:border-accent focus:ring-1 focus:ring-accent outline-none text-xs text-foreground placeholder:text-muted/60 transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-accent/5 border border-accent/20 text-[11px] text-muted space-y-1">
+                <div className="text-accent font-semibold flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Self-Hosting Default Credentials</span>
+                </div>
+                <div>User: <code className="text-foreground bg-black/40 px-1 rounded">admin</code> | Pass: <code className="text-foreground bg-black/40 px-1 rounded">cavrix@2026</code></div>
+                <div className="text-[10px] text-muted/70">Change anytime in your server's <code className="text-foreground">.env</code> file.</div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-accent hover:bg-accent-light text-black font-bold text-xs transition shadow-glow disabled:opacity-50"
+              >
+                {submitting ? (
+                  <span>Authenticating...</span>
+                ) : (
+                  <>
+                    <KeyRound className="w-4 h-4" />
+                    <span>Sign In to Server Console</span>
+                    <ArrowRight className="w-4 h-4 ml-auto" />
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+
+          {/* Tab 2: Official Discord Staff SSO */}
           {activeTab === "discord" && (
             <div className="space-y-4">
               <div className="text-xs text-muted leading-relaxed">
-                Authenticate using your authorized Discord staff account. Permissions and roles are automatically synced with the official Cavrix Cloud Discord server.
+                Authenticate using your authorized Discord staff account. Permissions and roles are automatically synced with the Cavrix Cloud Discord server.
               </div>
 
               <button
@@ -130,7 +243,7 @@ export default function LoginPage() {
 
               <div className="p-3.5 rounded-xl bg-card-secondary/70 border border-border space-y-1.5 text-[11px] text-muted">
                 <div className="flex items-center gap-1.5 text-foreground font-semibold">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-accent" />
                   <span>Security & Verification Scopes</span>
                 </div>
                 <div>• Identity and Guild Role validation (read-only)</div>
@@ -140,7 +253,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Tab 2: Demo & Role Sandbox */}
+          {/* Tab 3: Demo & Role Sandbox */}
           {activeTab === "demo" && (
             <div className="space-y-3">
               <div className="text-xs text-muted mb-2">
@@ -148,6 +261,7 @@ export default function LoginPage() {
               </div>
 
               <button
+                type="button"
                 onClick={() => handleDevLogin("ADMIN")}
                 disabled={loadingRole !== null}
                 className="w-full flex items-center justify-between p-3.5 rounded-xl bg-card-secondary border border-border hover:border-accent/40 text-xs text-foreground transition text-left"
@@ -165,35 +279,37 @@ export default function LoginPage() {
               </button>
 
               <button
+                type="button"
                 onClick={() => handleDevLogin("SUPPORT_LEAD")}
                 disabled={loadingRole !== null}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-card-secondary border border-border hover:border-emerald-500/40 text-xs text-foreground transition text-left"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-card-secondary border border-border hover:border-accent/40 text-xs text-foreground transition text-left"
               >
                 <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle2 className="w-4 h-4 text-accent" />
                   <div>
                     <div className="font-semibold text-foreground">Support Lead</div>
                     <div className="text-[10px] text-muted">Ticket escalations, workload reassignments</div>
                   </div>
                 </div>
-                <span className="font-mono text-[10px] text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 shrink-0">
+                <span className="font-mono text-[10px] text-accent px-2 py-0.5 rounded bg-accent/15 border border-accent/30 shrink-0">
                   {loadingRole === "SUPPORT_LEAD" ? "Launching..." : "ESCALATIONS"}
                 </span>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleDevLogin("SUPPORT_AGENT")}
                 disabled={loadingRole !== null}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-card-secondary border border-border hover:border-cyan-400/40 text-xs text-foreground transition text-left"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-card-secondary border border-border hover:border-accent/40 text-xs text-foreground transition text-left"
               >
                 <div className="flex items-center gap-2.5">
-                  <Lock className="w-4 h-4 text-cyan-400" />
+                  <Lock className="w-4 h-4 text-accent" />
                   <div>
                     <div className="font-semibold text-foreground">Support Agent</div>
                     <div className="text-[10px] text-muted">Claim tickets, reply to clients & diagnostics</div>
                   </div>
                 </div>
-                <span className="font-mono text-[10px] text-cyan-400 px-2 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 shrink-0">
+                <span className="font-mono text-[10px] text-accent px-2 py-0.5 rounded bg-accent/15 border border-accent/30 shrink-0">
                   {loadingRole === "SUPPORT_AGENT" ? "Launching..." : "TICKETS"}
                 </span>
               </button>
@@ -203,8 +319,8 @@ export default function LoginPage() {
           {/* Footer Security Badges */}
           <div className="pt-4 border-t border-border flex items-center justify-between text-[11px] text-muted font-mono">
             <span className="flex items-center gap-1">
-              <Lock className="w-3 h-3 text-emerald-400" />
-              <span>TLS 1.3 Protected</span>
+              <Lock className="w-3 h-3 text-accent" />
+              <span>TLS 1.3 & JWT Encrypted</span>
             </span>
             <span>Cavrix Console v1.0.0</span>
           </div>
@@ -212,8 +328,8 @@ export default function LoginPage() {
       </div>
 
       {/* Sub-footer */}
-      <div className="py-6 text-center text-xs text-muted relative z-10">
-        © {new Date().getFullYear()} Cavrix Cloud Infrastructure Inc. All rights reserved.
+      <div className="py-6 text-center text-xs text-muted relative z-10 font-mono">
+        © {new Date().getFullYear()} Cavrix Cloud Infrastructure Inc. • Single-Server Dedicated Edition
       </div>
     </div>
   );

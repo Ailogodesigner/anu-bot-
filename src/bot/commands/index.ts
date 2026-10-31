@@ -7,13 +7,130 @@ import {
   ButtonStyle,
   StringSelectMenuBuilder,
   ChannelType,
+  PermissionFlagsBits,
+  ActivityType,
 } from "discord.js";
+import os from "os";
 import { prisma } from "../../lib/prisma";
 import { calculateVpsPricing, VpsSpecs } from "../../lib/calculator";
 import { searchKnowledgeBase } from "../../lib/ai";
 import { escalateTicket } from "../../lib/escalation";
 import { generateTicketTranscript } from "../../lib/transcripts";
 import { logAuditEvent } from "../../lib/audit";
+
+
+function configureOwnerSubcommands(builder: SlashCommandBuilder) {
+  return builder
+    .addSubcommand((sub) =>
+      sub.setName("dashboard").setDescription("Open the web control panel dashboard link")
+    )
+    .addSubcommand((sub) =>
+      sub.setName("setup").setDescription("Auto-configure ticket categories, channels, and permissions")
+    )
+    .addSubcommand((sub) =>
+      sub.setName("panel").setDescription("Send the support ticket creation button desk")
+    )
+    .addSubcommand((sub) =>
+      sub.setName("verify").setDescription("Send the member verification button panel")
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("announce")
+        .setDescription("Broadcast an official luxury gold embed announcement")
+        .addChannelOption((opt) => opt.setName("channel").setDescription("Target announcement channel").setRequired(true))
+        .addStringOption((opt) => opt.setName("title").setDescription("Announcement title").setRequired(true))
+        .addStringOption((opt) => opt.setName("message").setDescription("Announcement body text").setRequired(true))
+        .addBooleanOption((opt) => opt.setName("ping_everyone").setDescription("Ping @everyone").setRequired(false))
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("purge")
+        .setDescription("Bulk delete recent messages in this channel")
+        .addIntegerOption((opt) =>
+          opt.setName("amount").setDescription("Number of messages (1-100)").setRequired(true).setMinValue(1).setMaxValue(100)
+        )
+    )
+    .addSubcommand((sub) => sub.setName("lock").setDescription("Lock channel to prevent regular members from chatting"))
+    .addSubcommand((sub) => sub.setName("unlock").setDescription("Unlock channel to restore chat permissions"))
+    .addSubcommand((sub) =>
+      sub
+        .setName("kick")
+        .setDescription("Kick a member from the server")
+        .addUserOption((opt) => opt.setName("user").setDescription("User to kick").setRequired(true))
+        .addStringOption((opt) => opt.setName("reason").setDescription("Reason for kick").setRequired(false))
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("ban")
+        .setDescription("Ban a member from the server")
+        .addUserOption((opt) => opt.setName("user").setDescription("User to ban").setRequired(true))
+        .addStringOption((opt) => opt.setName("reason").setDescription("Reason for ban").setRequired(false))
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("timeout")
+        .setDescription("Timeout (mute) a member")
+        .addUserOption((opt) => opt.setName("user").setDescription("User to timeout").setRequired(true))
+        .addIntegerOption((opt) =>
+          opt.setName("minutes").setDescription("Duration in minutes (1-40320)").setRequired(true).setMinValue(1).setMaxValue(40320)
+        )
+        .addStringOption((opt) => opt.setName("reason").setDescription("Reason for timeout").setRequired(false))
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("untimeout")
+        .setDescription("Remove timeout from a member")
+        .addUserOption((opt) => opt.setName("user").setDescription("User to untimeout").setRequired(true))
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("staff-add")
+        .setDescription("Add or promote a staff member in database")
+        .addUserOption((opt) => opt.setName("user").setDescription("User to promote").setRequired(true))
+        .addStringOption((opt) =>
+          opt
+            .setName("role")
+            .setDescription("Role to assign")
+            .setRequired(true)
+            .addChoices(
+              { name: "Administrator", value: "ADMIN" },
+              { name: "Support Lead", value: "SUPPORT_LEAD" },
+              { name: "Support Agent", value: "SUPPORT_AGENT" },
+              { name: "Viewer", value: "VIEWER" }
+            )
+        )
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("staff-remove")
+        .setDescription("Demote staff member from database")
+        .addUserOption((opt) => opt.setName("user").setDescription("User to demote").setRequired(true))
+    )
+    .addSubcommand((sub) =>
+      sub.setName("staff-list").setDescription("View all registered staff members and their active shifts")
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("bot-status")
+        .setDescription("Update bot custom activity and status presence")
+        .addStringOption((opt) => opt.setName("activity").setDescription("Status text (e.g. Cavrix Cloud • /ticket)").setRequired(true))
+        .addStringOption((opt) =>
+          opt
+            .setName("type")
+            .setDescription("Activity type")
+            .setRequired(false)
+            .addChoices(
+              { name: "Watching", value: "Watching" },
+              { name: "Playing", value: "Playing" },
+              { name: "Listening", value: "Listening" },
+              { name: "Competing", value: "Competing" }
+            )
+        )
+    )
+    .addSubcommand((sub) =>
+      sub.setName("host-info").setDescription("Self-hosting system diagnostics (RAM, CPU, Uptime, Node)")
+    );
+}
 
 export const slashCommands = [
   new SlashCommandBuilder()
@@ -123,35 +240,50 @@ export const slashCommands = [
     .addSubcommand((sub) => sub.setName("stats").setDescription("View your personal ticket resolution performance"))
     .addSubcommand((sub) => sub.setName("leaderboard").setDescription("View staff rankings for server 1528401268354056293")),
 
+  configureOwnerSubcommands(
+    new SlashCommandBuilder()
+      .setName("owner")
+      .setDescription("Server Owner Master Administration & Automation Control")
+  ),
+
+  configureOwnerSubcommands(
+    new SlashCommandBuilder()
+      .setName("admin")
+      .setDescription("Server Administration & Moderation Control")
+  ),
+
+  configureOwnerSubcommands(
+    new SlashCommandBuilder()
+      .setName("app-admin")
+      .setDescription("Cavrix Bot Administration & Server Configuration")
+  ),
+
   new SlashCommandBuilder()
-    .setName("app-admin")
-    .setDescription("Cavrix Bot Administration & Server Configuration")
-    .addSubcommand((sub) =>
-      sub
-        .setName("dashboard")
-        .setDescription("Open the web control panel dashboard link")
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName("setup")
-        .setDescription("Auto-configure ticket categories, channels, and permissions for server 1528401268354056293")
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName("panel")
-        .setDescription("Send the ticket creation button panel in this channel")
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName("verify")
-        .setDescription("Send the member verification button panel in this channel")
+    .setName("purge")
+    .setDescription("Bulk delete recent messages in this channel")
+    .addIntegerOption((opt) =>
+      opt.setName("amount").setDescription("Number of messages (1-100)").setRequired(true).setMinValue(1).setMaxValue(100)
     ),
 
   new SlashCommandBuilder()
-    .setName("admin")
-    .setDescription("Quick alias for app-admin commands")
-    .addSubcommand((sub) => sub.setName("dashboard").setDescription("Open the web control panel dashboard link"))
-    .addSubcommand((sub) => sub.setName("setup").setDescription("Auto-configure ticket categories and channels")),
+    .setName("lock")
+    .setDescription("Lock this channel to prevent regular members from chatting"),
+
+  new SlashCommandBuilder()
+    .setName("unlock")
+    .setDescription("Unlock this channel to allow chatting again"),
+
+  new SlashCommandBuilder()
+    .setName("serverinfo")
+    .setDescription("Display comprehensive server statistics and security status"),
+
+  new SlashCommandBuilder()
+    .setName("announce")
+    .setDescription("Broadcast an official luxury gold embed announcement")
+    .addChannelOption((opt) => opt.setName("channel").setDescription("Target channel").setRequired(true))
+    .addStringOption((opt) => opt.setName("title").setDescription("Announcement title").setRequired(true))
+    .addStringOption((opt) => opt.setName("message").setDescription("Announcement content").setRequired(true))
+    .addBooleanOption((opt) => opt.setName("ping_everyone").setDescription("Ping @everyone").setRequired(false)),
 
   new SlashCommandBuilder()
     .setName("help")
@@ -628,7 +760,7 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
     }
   }
 
-  if (commandName === "app-admin" || commandName === "admin" || commandName === "app_admin") {
+  if (commandName === "owner" || commandName === "app-admin" || commandName === "admin" || commandName === "app_admin") {
     await interaction.deferReply({ ephemeral: true });
     const sub = interaction.options.getSubcommand();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3005";
@@ -854,7 +986,445 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
       await interaction.editReply({ content: "✅ Verification panel dispatched to this channel!" });
       return;
     }
+    if (sub === "announce") {
+      const targetChannel = interaction.options.getChannel("channel", true);
+      const title = interaction.options.getString("title", true);
+      const message = interaction.options.getString("message", true);
+      const pingEveryone = interaction.options.getBoolean("ping_everyone") || false;
+
+      if (!("send" in targetChannel)) {
+        await interaction.editReply({ content: "❌ Target channel is not a valid text channel." });
+        return;
+      }
+
+      const announceEmbed = new EmbedBuilder()
+        .setTitle(title)
+        .setDescription(message)
+        .setColor(0xD4AF37) // Luxury Gold
+        .setFooter({ text: "Cavrix Cloud Official Broadcast • Verified NetOps" })
+        .setTimestamp();
+
+      await (targetChannel as any).send({
+        content: pingEveryone ? "@everyone" : undefined,
+        embeds: [announceEmbed],
+      });
+
+      await interaction.editReply({
+        content: `✅ Official announcement broadcasted to <#${targetChannel.id}>!`,
+      });
+      return;
+    }
+
+    if (sub === "purge") {
+      const amount = interaction.options.getInteger("amount", true);
+      const channel = interaction.channel;
+
+      if (!channel || !("bulkDelete" in channel)) {
+        await interaction.editReply({ content: "❌ Purge can only be performed in text channels." });
+        return;
+      }
+
+      try {
+        const deleted = await (channel as any).bulkDelete(amount, true);
+        await interaction.editReply({
+          content: `🧹 Successfully purged **${deleted.size} messages** from this channel.`,
+        });
+      } catch (err: any) {
+        await interaction.editReply({
+          content: `❌ Purge error: ${err?.message || err}. (Note: Discord cannot delete messages older than 14 days)`,
+        });
+      }
+      return;
+    }
+
+    if (sub === "lock") {
+      const guild = interaction.guild;
+      const channel = interaction.channel;
+      if (!guild || !channel || !("permissionOverwrites" in channel)) {
+        await interaction.editReply({ content: "❌ This command must be run inside a guild text channel." });
+        return;
+      }
+
+      try {
+        await (channel as any).permissionOverwrites.edit(guild.roles.everyone, {
+          SendMessages: false,
+        });
+
+        const lockEmbed = new EmbedBuilder()
+          .setTitle("🔒 Channel Lockdown")
+          .setDescription("This channel has been temporarily locked by server administration. Non-staff members cannot send messages.")
+          .setColor(0xD4AF37)
+          .setFooter({ text: "Cavrix Security Protocol" })
+          .setTimestamp();
+
+        await (channel as any).send({ embeds: [lockEmbed] });
+        await interaction.editReply({ content: "✅ Channel locked successfully." });
+      } catch (err: any) {
+        await interaction.editReply({ content: `❌ Failed to lock channel: ${err?.message || err}` });
+      }
+      return;
+    }
+
+    if (sub === "unlock") {
+      const guild = interaction.guild;
+      const channel = interaction.channel;
+      if (!guild || !channel || !("permissionOverwrites" in channel)) {
+        await interaction.editReply({ content: "❌ This command must be run inside a guild text channel." });
+        return;
+      }
+
+      try {
+        await (channel as any).permissionOverwrites.edit(guild.roles.everyone, {
+          SendMessages: null,
+        });
+
+        const unlockEmbed = new EmbedBuilder()
+          .setTitle("🔓 Channel Unlocked")
+          .setDescription("Lockdown lifted. Members can now participate and send messages.")
+          .setColor(0xD4AF37)
+          .setFooter({ text: "Cavrix Security Protocol" })
+          .setTimestamp();
+
+        await (channel as any).send({ embeds: [unlockEmbed] });
+        await interaction.editReply({ content: "✅ Channel unlocked successfully." });
+      } catch (err: any) {
+        await interaction.editReply({ content: `❌ Failed to unlock channel: ${err?.message || err}` });
+      }
+      return;
+    }
+
+    if (sub === "kick") {
+      const guild = interaction.guild;
+      const targetUser = interaction.options.getUser("user", true);
+      const reason = interaction.options.getString("reason") || "Kicked by Server Owner";
+
+      if (!guild) return;
+      try {
+        const member = await guild.members.fetch(targetUser.id);
+        if (!member.kickable) {
+          await interaction.editReply({ content: "❌ I cannot kick this user (their role is higher or equal to my bot role)." });
+          return;
+        }
+        await member.kick(reason);
+        await interaction.editReply({
+          content: `👢 Member **${targetUser.tag}** (\`${targetUser.id}\`) was kicked. Reason: *${reason}*`,
+        });
+      } catch (err: any) {
+        await interaction.editReply({ content: `❌ Kick failed: ${err?.message || err}` });
+      }
+      return;
+    }
+
+    if (sub === "ban") {
+      const guild = interaction.guild;
+      const targetUser = interaction.options.getUser("user", true);
+      const reason = interaction.options.getString("reason") || "Banned by Server Owner";
+
+      if (!guild) return;
+      try {
+        await guild.members.ban(targetUser.id, { reason });
+        await interaction.editReply({
+          content: `🔨 Member **${targetUser.tag}** (\`${targetUser.id}\`) was permanently banned. Reason: *${reason}*`,
+        });
+      } catch (err: any) {
+        await interaction.editReply({ content: `❌ Ban failed: ${err?.message || err}` });
+      }
+      return;
+    }
+
+    if (sub === "timeout") {
+      const guild = interaction.guild;
+      const targetUser = interaction.options.getUser("user", true);
+      const minutes = interaction.options.getInteger("minutes", true);
+      const reason = interaction.options.getString("reason") || "Timed out by staff";
+
+      if (!guild) return;
+      try {
+        const member = await guild.members.fetch(targetUser.id);
+        await member.timeout(minutes * 60 * 1000, reason);
+        await interaction.editReply({
+          content: `⏳ Member **${targetUser.tag}** has been timed out for **${minutes} minute(s)**. Reason: *${reason}*`,
+        });
+      } catch (err: any) {
+        await interaction.editReply({ content: `❌ Timeout failed: ${err?.message || err}` });
+      }
+      return;
+    }
+
+    if (sub === "untimeout") {
+      const guild = interaction.guild;
+      const targetUser = interaction.options.getUser("user", true);
+
+      if (!guild) return;
+      try {
+        const member = await guild.members.fetch(targetUser.id);
+        await member.timeout(null);
+        await interaction.editReply({
+          content: `✅ Timeout removed for **${targetUser.tag}**. They can now chat freely.`,
+        });
+      } catch (err: any) {
+        await interaction.editReply({ content: `❌ Failed to remove timeout: ${err?.message || err}` });
+      }
+      return;
+    }
+
+    if (sub === "staff-add") {
+      const targetUser = interaction.options.getUser("user", true);
+      const role = interaction.options.getString("role", true) as any;
+
+      const userRecord = await prisma.user.upsert({
+        where: { discordId: targetUser.id },
+        update: {
+          username: targetUser.username,
+          avatar: targetUser.displayAvatarURL(),
+          role,
+          status: "ONLINE",
+          lastActiveAt: new Date(),
+        },
+        create: {
+          discordId: targetUser.id,
+          username: targetUser.username,
+          avatar: targetUser.displayAvatarURL(),
+          role,
+          status: "ONLINE",
+          lastActiveAt: new Date(),
+        },
+      });
+
+      const embed = new EmbedBuilder()
+        .setTitle("✅ Staff Privileges Granted")
+        .setDescription(`User <@${targetUser.id}> has been assigned role **${role}** in Cavrix Cloud database.`)
+        .setColor(0xD4AF37)
+        .addFields(
+          { name: "Staff Member", value: `${targetUser.tag}`, inline: true },
+          { name: "Assigned Role", value: `\`${role}\``, inline: true },
+          { name: "Dashboard Access", value: `[Open Console](${appUrl}/dashboard/staff)`, inline: true }
+        )
+        .setFooter({ text: "Cavrix Cloud NetOps • Staff Directory" })
+        .setTimestamp();
+
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
+
+    if (sub === "staff-remove") {
+      const targetUser = interaction.options.getUser("user", true);
+
+      await prisma.user.upsert({
+        where: { discordId: targetUser.id },
+        update: { role: "VIEWER", status: "OFFLINE" },
+        create: {
+          discordId: targetUser.id,
+          username: targetUser.username,
+          role: "VIEWER",
+          status: "OFFLINE",
+        },
+      });
+
+      await interaction.editReply({
+        content: `❌ Revoked staff privileges for <@${targetUser.id}>. Role reset to **VIEWER**.`,
+      });
+      return;
+    }
+
+    if (sub === "staff-list") {
+      const allStaff = await prisma.user.findMany({
+        where: { role: { not: "VIEWER" } },
+        orderBy: { role: "asc" },
+      });
+
+      const list = allStaff.map(
+        (s) =>
+          `• **${s.username}** (\`${s.role}\`) — Status: \`${s.status}\` | Resolved: \`${s.totalResolvedTickets}\` | Rating: ⭐ \`${s.avgRating.toFixed(1)}\``
+      );
+
+      const embed = new EmbedBuilder()
+        .setTitle("🛡️ Registered Server Staff Directory")
+        .setDescription(list.length ? list.join("\n") : "No staff members configured in database.")
+        .setColor(0xD4AF37)
+        .setFooter({ text: "Cavrix Cloud NetOps" })
+        .setTimestamp();
+
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
+
+    if (sub === "bot-status") {
+      const activity = interaction.options.getString("activity", true);
+      const typeStr = interaction.options.getString("type") || "Watching";
+
+      let actType = ActivityType.Watching;
+      if (typeStr === "Playing") actType = ActivityType.Playing;
+      if (typeStr === "Listening") actType = ActivityType.Listening;
+      if (typeStr === "Competing") actType = ActivityType.Competing;
+
+      interaction.client.user?.setPresence({
+        activities: [{ name: activity, type: actType }],
+        status: "online",
+      });
+
+      await interaction.editReply({
+        content: `🤖 Bot presence updated to: **${typeStr} ${activity}**`,
+      });
+      return;
+    }
+
+    if (sub === "host-info") {
+      const memUsage = process.memoryUsage();
+      const uptimeSec = Math.floor(process.uptime());
+      const hours = Math.floor(uptimeSec / 3600);
+      const mins = Math.floor((uptimeSec % 3600) / 60);
+
+      const embed = new EmbedBuilder()
+        .setTitle("🖥️ Cavrix Self-Hosting Telemetry")
+        .setColor(0xD4AF37)
+        .addFields(
+          { name: "⚡ Gateway Latency", value: `\`${interaction.client.ws.ping} ms\``, inline: true },
+          { name: "⏱️ Host Uptime", value: `\`${hours}h ${mins}m\``, inline: true },
+          { name: "🧠 RAM (RSS)", value: `\`${Math.round(memUsage.rss / 1024 / 1024)} MB\``, inline: true },
+          { name: "📦 Node Runtime", value: `\`${process.version}\``, inline: true },
+          { name: "💻 OS Platform", value: `\`${os.type()} ${os.arch()}\``, inline: true },
+          { name: "🌐 Control Panel", value: `[Open Dashboard](${appUrl}/dashboard/hosting)`, inline: true }
+        )
+        .setFooter({ text: "Cavrix Cloud Host Controller • White, Gold & Black" })
+        .setTimestamp();
+
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
+
   }
+  if (commandName === "purge") {
+    await interaction.deferReply({ ephemeral: true });
+    const isOwnerOrAdmin =
+      interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages) ||
+      interaction.memberPermissions?.has(PermissionFlagsBits.Administrator) ||
+      interaction.user.id === interaction.guild?.ownerId;
+
+    if (!isOwnerOrAdmin) {
+      await interaction.editReply({ content: "❌ You need Manage Messages permission to use this command." });
+      return;
+    }
+
+    const amount = interaction.options.getInteger("amount", true);
+    const channel = interaction.channel;
+    if (!channel || !("bulkDelete" in channel)) {
+      await interaction.editReply({ content: "❌ Cannot purge in this channel." });
+      return;
+    }
+
+    try {
+      const deleted = await (channel as any).bulkDelete(amount, true);
+      await interaction.editReply({ content: `🧹 Successfully purged **${deleted.size} messages**.` });
+    } catch (err: any) {
+      await interaction.editReply({ content: `❌ Purge error: ${err?.message || err}` });
+    }
+    return;
+  }
+
+  if (commandName === "lock") {
+    await interaction.deferReply({ ephemeral: true });
+    const guild = interaction.guild;
+    const channel = interaction.channel;
+    if (!guild || !channel || !("permissionOverwrites" in channel)) {
+      await interaction.editReply({ content: "❌ Command must be used in a text channel." });
+      return;
+    }
+
+    try {
+      await (channel as any).permissionOverwrites.edit(guild.roles.everyone, { SendMessages: false });
+      const lockEmbed = new EmbedBuilder()
+        .setTitle("🔒 Channel Lockdown")
+        .setDescription("This channel has been locked by administration.")
+        .setColor(0xD4AF37)
+        .setTimestamp();
+      await (channel as any).send({ embeds: [lockEmbed] });
+      await interaction.editReply({ content: "✅ Channel locked." });
+    } catch (err: any) {
+      await interaction.editReply({ content: `❌ Error: ${err?.message || err}` });
+    }
+    return;
+  }
+
+  if (commandName === "unlock") {
+    await interaction.deferReply({ ephemeral: true });
+    const guild = interaction.guild;
+    const channel = interaction.channel;
+    if (!guild || !channel || !("permissionOverwrites" in channel)) {
+      await interaction.editReply({ content: "❌ Command must be used in a text channel." });
+      return;
+    }
+
+    try {
+      await (channel as any).permissionOverwrites.edit(guild.roles.everyone, { SendMessages: null });
+      const unlockEmbed = new EmbedBuilder()
+        .setTitle("🔓 Channel Unlocked")
+        .setDescription("Lockdown lifted. Chatting is enabled.")
+        .setColor(0xD4AF37)
+        .setTimestamp();
+      await (channel as any).send({ embeds: [unlockEmbed] });
+      await interaction.editReply({ content: "✅ Channel unlocked." });
+    } catch (err: any) {
+      await interaction.editReply({ content: `❌ Error: ${err?.message || err}` });
+    }
+    return;
+  }
+
+  if (commandName === "announce") {
+    await interaction.deferReply({ ephemeral: true });
+    const targetChannel = interaction.options.getChannel("channel", true);
+    const title = interaction.options.getString("title", true);
+    const message = interaction.options.getString("message", true);
+    const pingEveryone = interaction.options.getBoolean("ping_everyone") || false;
+
+    if (!("send" in targetChannel)) {
+      await interaction.editReply({ content: "❌ Invalid target text channel." });
+      return;
+    }
+
+    const announceEmbed = new EmbedBuilder()
+      .setTitle(title)
+      .setDescription(message)
+      .setColor(0xD4AF37)
+      .setFooter({ text: "Cavrix Cloud Official Broadcast" })
+      .setTimestamp();
+
+    await (targetChannel as any).send({
+      content: pingEveryone ? "@everyone" : undefined,
+      embeds: [announceEmbed],
+    });
+
+    await interaction.editReply({ content: `✅ Broadcasted to <#${targetChannel.id}>!` });
+    return;
+  }
+
+  if (commandName === "serverinfo") {
+    await interaction.deferReply({ ephemeral: true });
+    const guild = interaction.guild;
+    if (!guild) {
+      await interaction.editReply({ content: "❌ Must be run in a server." });
+      return;
+    }
+
+    const embed = new EmbedBuilder()
+      .setTitle(`🛡️ ${guild.name} • Server Overview`)
+      .setThumbnail(guild.iconURL() || "")
+      .setColor(0xD4AF37)
+      .addFields(
+        { name: "🆔 Server ID", value: `\`${guild.id}\``, inline: true },
+        { name: "👑 Server Owner", value: `<@${guild.ownerId}>`, inline: true },
+        { name: "👥 Members Count", value: `\`${guild.memberCount}\``, inline: true },
+        { name: "📁 Channels", value: `\`${guild.channels.cache.size}\``, inline: true },
+        { name: "🏷️ Roles", value: `\`${guild.roles.cache.size}\``, inline: true },
+        { name: "🚀 Boost Tier", value: `\`Level ${guild.premiumTier}\` (${guild.premiumSubscriptionCount || 0} boosts)`, inline: true }
+      )
+      .setFooter({ text: "Cavrix Cloud Intelligence System" })
+      .setTimestamp();
+
+    await interaction.editReply({ embeds: [embed] });
+    return;
+  }
+
 
   if (commandName === "help") {
     const embed = new EmbedBuilder()

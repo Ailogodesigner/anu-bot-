@@ -1,0 +1,19 @@
+[Unit]
+Description=Cavrix Cloud Discord Bot & Management Control Panel
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/cavrix-bot
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=cavrix-bot
+Environment=NODE_ENV=production
+Environment=PORT=3005
+
+[Install]
+WantedBy=multi-user.target

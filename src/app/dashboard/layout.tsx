@@ -41,6 +41,7 @@ const navItems = [
   { href: "/dashboard/config", label: "Server Config", icon: Settings },
   { href: "/dashboard/audit-logs", label: "Security & Audit Logs", icon: ShieldAlert },
   { href: "/dashboard/diagnostics", label: "Bot Diagnostics", icon: Activity },
+  { href: "/dashboard/hosting", label: "Self-Hosting & Automation", icon: Server },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
