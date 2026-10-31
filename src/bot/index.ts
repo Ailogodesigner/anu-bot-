@@ -38,8 +38,14 @@ client.once(Events.ClientReady, async (readyClient) => {
       const body = slashCommands.map((c) => c.toJSON());
 
       if (guildId) {
-        await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body });
-        console.log(`✅ Successfully registered slash commands for guild: ${guildId}`);
+        try {
+          await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body });
+          console.log(`✅ Successfully registered slash commands for guild: ${guildId}`);
+        } catch (guildErr: any) {
+          console.warn(`⚠️ Guild-specific command registration notice (${guildErr?.message}). Registering global application commands...`);
+          await rest.put(Routes.applicationCommands(clientId), { body });
+          console.log("✅ Successfully registered global slash commands.");
+        }
       } else {
         await rest.put(Routes.applicationCommands(clientId), { body });
         console.log("✅ Successfully registered global slash commands.");
