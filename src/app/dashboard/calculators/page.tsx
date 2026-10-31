@@ -257,7 +257,7 @@ export default function CalculatorsPage() {
                 <select
                   value={ipv4}
                   onChange={(e) => setIpv4(parseInt(e.target.value))}
-                  className="w-full p-2 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2 rounded-lg bg-[#050505] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
                 >
                   <option value={1}>1 Dedicated IP</option>
                   <option value={2}>2 Dedicated IPs</option>
@@ -271,7 +271,7 @@ export default function CalculatorsPage() {
                 <select
                   value={ddosTier}
                   onChange={(e) => setDdosTier(e.target.value as any)}
-                  className="w-full p-2 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2 rounded-lg bg-[#050505] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
                 >
                   <option value="standard">Standard (Included)</option>
                   <option value="advanced">Advanced (+$12/mo)</option>
@@ -284,7 +284,7 @@ export default function CalculatorsPage() {
                 <select
                   value={backupTier}
                   onChange={(e) => setBackupTier(e.target.value as any)}
-                  className="w-full p-2 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2 rounded-lg bg-[#050505] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
                 >
                   <option value="none">None (Off)</option>
                   <option value="weekly">Weekly Snapshots</option>
@@ -382,7 +382,7 @@ export default function CalculatorsPage() {
                   step="0.5"
                   value={config.basePrice}
                   onChange={(e) => setConfig({ ...config, basePrice: parseFloat(e.target.value) || 0 })}
-                  className="w-full p-2 rounded bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                  className="w-full p-2 rounded bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -393,7 +393,7 @@ export default function CalculatorsPage() {
                   step="0.1"
                   value={config.cpuCorePrice}
                   onChange={(e) => setConfig({ ...config, cpuCorePrice: parseFloat(e.target.value) || 0 })}
-                  className="w-full p-2 rounded bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                  className="w-full p-2 rounded bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -404,7 +404,7 @@ export default function CalculatorsPage() {
                   step="0.1"
                   value={config.ramGbPrice}
                   onChange={(e) => setConfig({ ...config, ramGbPrice: parseFloat(e.target.value) || 0 })}
-                  className="w-full p-2 rounded bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                  className="w-full p-2 rounded bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -415,7 +415,7 @@ export default function CalculatorsPage() {
                   step="0.01"
                   value={config.nvmeGbPrice}
                   onChange={(e) => setConfig({ ...config, nvmeGbPrice: parseFloat(e.target.value) || 0 })}
-                  className="w-full p-2 rounded bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                  className="w-full p-2 rounded bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
                 />
               </div>
             </div>
@@ -426,7 +426,7 @@ export default function CalculatorsPage() {
                 type="text"
                 value={config.formulaExpression}
                 onChange={(e) => setConfig({ ...config, formulaExpression: e.target.value })}
-                className="w-full p-2.5 rounded bg-[#0B0F19] border border-border text-foreground font-mono text-xs focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded bg-[#050505] border border-border text-foreground font-mono text-xs focus:outline-none focus:border-accent"
               />
               <span className="text-[10px] text-muted-foreground mt-1 block">
                 Allowed variables: base, cpu, cpuPrice, ram, ramPrice, nvme, nvmePrice, bw, bwPrice, ip, ipPrice, ddos, backup

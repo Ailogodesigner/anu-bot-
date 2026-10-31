@@ -29,7 +29,7 @@ export default function DashboardError({
       </div>
 
       {error?.message && (
-        <div className="p-3 rounded-lg bg-[#0B0F19] border border-border text-left text-[11px] font-mono text-warning break-words max-h-32 overflow-y-auto">
+        <div className="p-3 rounded-lg bg-[#050505] border border-border text-left text-[11px] font-mono text-warning break-words max-h-32 overflow-y-auto">
           {error.message}
         </div>
       )}

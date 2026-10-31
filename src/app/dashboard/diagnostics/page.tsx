@@ -199,7 +199,7 @@ export default function DiagnosticsPage() {
             {Object.entries(envChecklist).map(([key, isSet]) => (
               <div
                 key={key}
-                className="flex items-center justify-between p-2.5 rounded-lg bg-[#0B0F19] border border-border font-mono text-[11px]"
+                className="flex items-center justify-between p-2.5 rounded-lg bg-[#050505] border border-border font-mono text-[11px]"
               >
                 <span className="text-foreground">{key}</span>
                 {isSet ? (

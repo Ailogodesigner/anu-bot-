@@ -343,7 +343,7 @@ export default function TicketDetailPage() {
                       ? "bg-[#161F30] border-l-4 border-l-accent border-border"
                       : isAi
                       ? "bg-[#131C2D] border-l-4 border-l-accent-light border-border"
-                      : "bg-[#0B0F19] border-border"
+                      : "bg-[#050505] border-border"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -394,7 +394,7 @@ export default function TicketDetailPage() {
                 placeholder="Type your official technical response here..."
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
-                className="w-full p-3 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
+                className="w-full p-3 rounded-lg bg-[#050505] border border-border text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
               />
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-muted">Cavrix Cloud &bull; Verified Staff Dispatch</span>
@@ -453,7 +453,7 @@ export default function TicketDetailPage() {
                 <select
                   value={ticket.assignedStaff?.id || ""}
                   onChange={(e) => handleAssign(e.target.value)}
-                  className="w-full py-1.5 px-2.5 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
+                  className="w-full py-1.5 px-2.5 rounded-lg bg-[#050505] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
                 >
                   <option value="">Unassigned</option>
                   {allStaff.map((s) => (
@@ -509,7 +509,7 @@ export default function TicketDetailPage() {
                 <div className="text-[11px] text-muted text-center py-2">No internal notes yet.</div>
               ) : (
                 ticket.internalNotes.map((n) => (
-                  <div key={n.id} className="p-2.5 rounded-lg bg-[#0B0F19] border border-border text-xs space-y-1">
+                  <div key={n.id} className="p-2.5 rounded-lg bg-[#050505] border border-border text-xs space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-warning text-[11px]">{n.staffUsername}</span>
                       <span className="text-[10px] text-muted-foreground font-mono">
@@ -529,7 +529,7 @@ export default function TicketDetailPage() {
                 placeholder="Add private staff observation or troubleshooting note..."
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
-                className="w-full p-2 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-warning"
+                className="w-full p-2 rounded-lg bg-[#050505] border border-border text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-warning"
               />
               <button
                 type="submit"
@@ -560,7 +560,7 @@ export default function TicketDetailPage() {
                   placeholder="Summarize the corrective action taken (e.g. Cleared UFW rule, restarted sshd service via console)..."
                   value={resolveSummary}
                   onChange={(e) => setResolveSummary(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                 />
               </div>
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
@@ -601,7 +601,7 @@ export default function TicketDetailPage() {
                   placeholder="e.g. Hardware disk I/O errors or transit packet degradation requiring NetOps intervention..."
                   value={escalateReason}
                   onChange={(e) => setEscalateReason(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-warning"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-warning"
                 />
               </div>
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">

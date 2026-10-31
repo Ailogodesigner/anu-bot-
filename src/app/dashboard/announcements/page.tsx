@@ -161,7 +161,7 @@ export default function AnnouncementsPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#0B0F19] text-muted border-b border-border uppercase font-mono text-[10px]">
+              <thead className="bg-[#050505] text-muted border-b border-border uppercase font-mono text-[10px]">
                 <tr>
                   <th className="py-3 px-4">Title & Content</th>
                   <th className="py-3 px-4">Channel</th>
@@ -273,7 +273,7 @@ export default function AnnouncementsPage() {
                   placeholder="e.g. Scheduled Hypervisor Node Upgrade"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -285,7 +285,7 @@ export default function AnnouncementsPage() {
                   placeholder="e.g. 990000000000000004"
                   value={channelId}
                   onChange={(e) => setChannelId(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -296,7 +296,7 @@ export default function AnnouncementsPage() {
                     type="text"
                     value={channelName}
                     onChange={(e) => setChannelName(e.target.value)}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   />
                 </div>
                 <div>
@@ -306,7 +306,7 @@ export default function AnnouncementsPage() {
                     required
                     value={scheduledFor}
                     onChange={(e) => setScheduledFor(e.target.value)}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   />
                 </div>
               </div>
@@ -319,7 +319,7 @@ export default function AnnouncementsPage() {
                   placeholder="Enter the official notification text..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                 />
               </div>
 

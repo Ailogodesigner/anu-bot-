@@ -2,36 +2,22 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const viewport: Viewport = {
-  themeColor: "#0B0F19",
+  themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
 };
 
 export const metadata: Metadata = {
-  title: "Cavrix Cloud • Enterprise Cloud VPS & Discord Bot Automation",
+  title: "Cavrix Bot Control Panel • Server 1528401268354056293",
   description:
-    "High-performance AMD EPYC™ and Ryzen 9 KVM VPS with instant provisioning, 2.5+ Tbps Path.net Anti-DDoS, and 24/7 AI-augmented Discord management.",
+    "Dedicated Discord Bot Management, Real-time Queue Dispatch, and Staff Activity Telemetry for Server 1528401268354056293.",
   keywords: [
     "Cavrix Cloud",
-    "Cloud VPS",
-    "KVM VPS",
     "Discord Bot",
-    "Game Server Hosting",
-    "DDoS Protected VPS",
-    "AMD EPYC",
-    "Frankfurt VPS",
-    "NVMe Hosting",
+    "Staff Tracking",
+    "Ticket Management",
+    "Bot Control Panel",
   ],
-  authors: [{ name: "Cavrix Cloud Infrastructure Inc." }],
-  openGraph: {
-    title: "Cavrix Cloud • Enterprise Cloud VPS & Discord Bot Automation",
-    description:
-      "Deploy dedicated AMD EPYC™ & Ryzen 9 KVM instances in seconds. Integrated 24/7 Discord Bot gateway & Web Console.",
-    url: "https://cavrix.cloud",
-    siteName: "Cavrix Cloud",
-    locale: "en_US",
-    type: "website",
-  },
 };
 
 export default function RootLayout({

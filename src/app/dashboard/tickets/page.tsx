@@ -175,7 +175,7 @@ export default function TicketQueuePage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-medium font-mono transition ${
                 statusFilter === s
                   ? "bg-accent/15 border border-accent/40 text-accent font-semibold"
-                  : "bg-[#0B0F19] text-muted hover:text-foreground border border-border"
+                  : "bg-[#050505] text-muted hover:text-foreground border border-border"
               }`}
             >
               {s.replace("_", " ")}
@@ -194,7 +194,7 @@ export default function TicketQueuePage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && fetchTickets()}
-              className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
+              className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#050505] border border-border text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
             />
           </div>
 
@@ -203,7 +203,7 @@ export default function TicketQueuePage() {
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="w-full py-2 px-3 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
+              className="w-full py-2 px-3 rounded-lg bg-[#050505] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
             >
               <option value="ALL">All Priorities</option>
               <option value="URGENT">Urgent Priority</option>
@@ -218,7 +218,7 @@ export default function TicketQueuePage() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full py-2 px-3 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
+              className="w-full py-2 px-3 rounded-lg bg-[#050505] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
             >
               <option value="ALL">All Categories</option>
               {categories.map((c) => (
@@ -251,7 +251,7 @@ export default function TicketQueuePage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#0B0F19] text-muted border-b border-border uppercase font-mono text-[10px]">
+              <thead className="bg-[#050505] text-muted border-b border-border uppercase font-mono text-[10px]">
                 <tr>
                   <th className="py-3 px-4">Ticket</th>
                   <th className="py-3 px-4">Category</th>
@@ -383,7 +383,7 @@ export default function TicketQueuePage() {
                   placeholder="e.g. Cannot ping VPS gateway IP after reboot"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -393,7 +393,7 @@ export default function TicketQueuePage() {
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   >
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -408,7 +408,7 @@ export default function TicketQueuePage() {
                   <select
                     value={newPriority}
                     onChange={(e) => setNewPriority(e.target.value)}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   >
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
@@ -427,7 +427,7 @@ export default function TicketQueuePage() {
                     placeholder="e.g. ServerAdmin_Alex"
                     value={newCustomer}
                     onChange={(e) => setNewCustomer(e.target.value)}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   >
                   </input>
                 </div>
@@ -438,7 +438,7 @@ export default function TicketQueuePage() {
                     placeholder="18-digit Discord ID"
                     value={newCustomerDiscordId}
                     onChange={(e) => setNewCustomerDiscordId(e.target.value)}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   />
                 </div>
               </div>
@@ -450,7 +450,7 @@ export default function TicketQueuePage() {
                   placeholder="Paste terminal error or customer report description..."
                   value={newInitialMsg}
                   onChange={(e) => setNewInitialMsg(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                 />
               </div>
 

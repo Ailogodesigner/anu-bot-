@@ -133,7 +133,7 @@ export default function ServerConfigPage() {
                 type="text"
                 value={config.guildName}
                 onChange={(e) => setConfig({ ...config, guildName: e.target.value })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
               />
             </div>
 
@@ -143,7 +143,7 @@ export default function ServerConfigPage() {
                 type="text"
                 value={config.guildId}
                 onChange={(e) => setConfig({ ...config, guildId: e.target.value })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
               />
             </div>
 
@@ -154,7 +154,7 @@ export default function ServerConfigPage() {
                 placeholder="Discord Category Snowflake ID"
                 value={config.ticketCategoryId || ""}
                 onChange={(e) => setConfig({ ...config, ticketCategoryId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
               />
               <span className="text-[10px] text-muted-foreground mt-0.5 block">
                 Where dynamic channel per ticket is created
@@ -168,7 +168,7 @@ export default function ServerConfigPage() {
                 placeholder="e.g. 990000000000000002"
                 value={config.transcriptChannelId || ""}
                 onChange={(e) => setConfig({ ...config, transcriptChannelId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
               />
               <span className="text-[10px] text-muted-foreground mt-0.5 block">
                 Destination for generated HTML / Markdown ticket transcripts
@@ -182,7 +182,7 @@ export default function ServerConfigPage() {
                 placeholder="e.g. 990000000000000003"
                 value={config.auditLogChannelId || ""}
                 onChange={(e) => setConfig({ ...config, auditLogChannelId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
               />
             </div>
 
@@ -193,7 +193,7 @@ export default function ServerConfigPage() {
                 placeholder="e.g. 990000000000000004"
                 value={config.announcementChannelId || ""}
                 onChange={(e) => setConfig({ ...config, announcementChannelId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
               />
             </div>
           </div>
@@ -214,7 +214,7 @@ export default function ServerConfigPage() {
                 placeholder="Role Snowflake ID"
                 value={config.adminRoleId || ""}
                 onChange={(e) => setConfig({ ...config, adminRoleId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
               />
             </div>
 
@@ -225,7 +225,7 @@ export default function ServerConfigPage() {
                 placeholder="Role Snowflake ID"
                 value={config.supportRoleId || ""}
                 onChange={(e) => setConfig({ ...config, supportRoleId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
               />
             </div>
 
@@ -236,7 +236,7 @@ export default function ServerConfigPage() {
                 placeholder="Role Snowflake ID"
                 value={config.escalationRoleId || ""}
                 onChange={(e) => setConfig({ ...config, escalationRoleId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
               />
               <span className="text-[10px] text-muted-foreground mt-0.5 block">
                 Mentioned when customer clicks Escalate or AI detects urgency
@@ -261,7 +261,7 @@ export default function ServerConfigPage() {
                 max="10"
                 value={config.maxTicketsPerUser}
                 onChange={(e) => setConfig({ ...config, maxTicketsPerUser: parseInt(e.target.value) || 3 })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
               />
             </div>
 
@@ -273,7 +273,7 @@ export default function ServerConfigPage() {
                 max="168"
                 value={config.autoCloseHours}
                 onChange={(e) => setConfig({ ...config, autoCloseHours: parseInt(e.target.value) || 48 })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
               />
             </div>
 
@@ -282,7 +282,7 @@ export default function ServerConfigPage() {
               <select
                 value={config.aiEscalationSensitivity}
                 onChange={(e) => setConfig({ ...config, aiEscalationSensitivity: e.target.value })}
-                className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
               >
                 <option value="LOW">Low (Allow more AI attempts)</option>
                 <option value="NORMAL">Normal (Escalate on 2 failures)</option>
@@ -316,7 +316,7 @@ export default function ServerConfigPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             {categories.map((c) => (
-              <div key={c.id} className="p-3.5 rounded-lg bg-[#0B0F19] border border-border space-y-1">
+              <div key={c.id} className="p-3.5 rounded-lg bg-[#050505] border border-border space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-foreground flex items-center gap-1.5">
                     <span>{c.emoji}</span>

@@ -222,7 +222,7 @@ export default function EmbedBuilderPage() {
                   type="text"
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -234,7 +234,7 @@ export default function EmbedBuilderPage() {
                     value={authorName}
                     onChange={(e) => setAuthorName(e.target.value)}
                     placeholder="e.g. Cavrix Cloud Support"
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   />
                 </div>
 
@@ -251,7 +251,7 @@ export default function EmbedBuilderPage() {
                       type="text"
                       value={color}
                       onChange={(e) => setColor(e.target.value)}
-                      className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                      className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
                     />
                   </div>
                 </div>
@@ -263,7 +263,7 @@ export default function EmbedBuilderPage() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -273,7 +273,7 @@ export default function EmbedBuilderPage() {
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -283,7 +283,7 @@ export default function EmbedBuilderPage() {
                   type="text"
                   value={footerText}
                   onChange={(e) => setFooterText(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -318,7 +318,7 @@ export default function EmbedBuilderPage() {
 
             <div className="space-y-3">
               {fields.map((f, i) => (
-                <div key={i} className="p-3 rounded-lg bg-[#0B0F19] border border-border space-y-2 text-xs">
+                <div key={i} className="p-3 rounded-lg bg-[#050505] border border-border space-y-2 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-muted text-[10px]">Field #{i + 1}</span>
                     <div className="flex items-center gap-3">
@@ -371,7 +371,7 @@ export default function EmbedBuilderPage() {
                 placeholder="Discord Channel ID (e.g. 123456789012345678)"
                 value={channelId}
                 onChange={(e) => setChannelId(e.target.value)}
-                className="flex-1 p-2.5 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground focus:outline-none focus:border-accent font-mono"
+                className="flex-1 p-2.5 rounded-lg bg-[#050505] border border-border text-xs text-foreground focus:outline-none focus:border-accent font-mono"
               />
               <button
                 type="submit"

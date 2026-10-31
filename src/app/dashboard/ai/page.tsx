@@ -271,7 +271,7 @@ export default function AiKnowledgeBasePage() {
                   <select
                     value={config.provider}
                     onChange={(e) => setConfig({ ...config, provider: e.target.value })}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   >
                     <option value="LOCAL_FALLBACK">Rule Engine (Zero API Key Required)</option>
                     <option value="GEMINI">Google Gemini 1.5 Flash</option>
@@ -287,7 +287,7 @@ export default function AiKnowledgeBasePage() {
                     type="text"
                     value={config.modelName}
                     onChange={(e) => setConfig({ ...config, modelName: e.target.value })}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   />
                 </div>
 
@@ -320,7 +320,7 @@ export default function AiKnowledgeBasePage() {
                     type="number"
                     value={config.monthlyTokenLimit}
                     onChange={(e) => setConfig({ ...config, monthlyTokenLimit: parseInt(e.target.value) || 100000 })}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   />
                 </div>
               </div>
@@ -332,12 +332,12 @@ export default function AiKnowledgeBasePage() {
                   rows={6}
                   value={config.systemPrompt}
                   onChange={(e) => setConfig({ ...config, systemPrompt: e.target.value })}
-                  className="w-full p-3 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground font-mono focus:outline-none focus:border-accent"
+                  className="w-full p-3 rounded-lg bg-[#050505] border border-border text-xs text-foreground font-mono focus:outline-none focus:border-accent"
                 />
               </div>
 
               {/* Guardrails Checkboxes */}
-              <div className="p-4 rounded-lg bg-[#0B0F19] border border-border space-y-3">
+              <div className="p-4 rounded-lg bg-[#050505] border border-border space-y-3">
                 <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Shield className="w-3.5 h-3.5 text-accent" />
                   <span>Security & Anti-Hallucination Guardrails</span>
@@ -416,7 +416,7 @@ export default function AiKnowledgeBasePage() {
                   rows={3}
                   value={testQuery}
                   onChange={(e) => setTestQuery(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
+                  className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-xs text-foreground focus:outline-none focus:border-accent"
                 />
                 <button
                   onClick={handleRunTest}
@@ -429,7 +429,7 @@ export default function AiKnowledgeBasePage() {
               </div>
 
               {testResult && (
-                <div className="p-3.5 rounded-lg bg-[#0B0F19] border border-border space-y-2 text-xs">
+                <div className="p-3.5 rounded-lg bg-[#050505] border border-border space-y-2 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-[10px] text-accent">Provider: {testResult.usedProvider}</span>
                     {testResult.shouldEscalate ? (
@@ -563,7 +563,7 @@ export default function AiKnowledgeBasePage() {
                         setArtSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
                       }
                     }}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   />
                 </div>
                 <div>
@@ -573,7 +573,7 @@ export default function AiKnowledgeBasePage() {
                     required
                     value={artSlug}
                     onChange={(e) => setArtSlug(e.target.value)}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent font-mono"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent font-mono"
                   />
                 </div>
               </div>
@@ -584,7 +584,7 @@ export default function AiKnowledgeBasePage() {
                   <select
                     value={artCategory}
                     onChange={(e) => setArtCategory(e.target.value)}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   >
                     <option value="SSH">SSH Access & Authentication</option>
                     <option value="FIREWALL">UFW & IPTables Firewall</option>
@@ -600,7 +600,7 @@ export default function AiKnowledgeBasePage() {
                     placeholder="ssh port 22 connection refused timeout fail2ban"
                     value={artKeywords}
                     onChange={(e) => setArtKeywords(e.target.value)}
-                    className="w-full p-2.5 rounded-lg bg-[#0B0F19] border border-border text-foreground focus:outline-none focus:border-accent"
+                    className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
                   />
                 </div>
               </div>
@@ -613,7 +613,7 @@ export default function AiKnowledgeBasePage() {
                   placeholder="### Problem&#10;Describe root cause and diagnostic commands..."
                   value={artContent}
                   onChange={(e) => setArtContent(e.target.value)}
-                  className="w-full p-3 rounded-lg bg-[#0B0F19] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                  className="w-full p-3 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
                 />
               </div>
 

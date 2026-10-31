@@ -129,7 +129,7 @@ export default function AuditAnalyticsPage() {
                   className={`px-2.5 py-1 rounded text-[11px] font-mono font-medium transition ${
                     actionFilter === a
                       ? "bg-accent/15 text-accent border border-accent/40 font-semibold"
-                      : "bg-[#0B0F19] text-muted hover:text-foreground border border-border"
+                      : "bg-[#050505] text-muted hover:text-foreground border border-border"
                   }`}
                 >
                   {a.replace("_", " ")}
@@ -145,7 +145,7 @@ export default function AuditAnalyticsPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && fetchData()}
-                className="w-full pl-9 pr-4 py-1.5 rounded-lg bg-[#0B0F19] border border-border text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
+                className="w-full pl-9 pr-4 py-1.5 rounded-lg bg-[#050505] border border-border text-xs text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
               />
             </div>
           </div>
@@ -162,7 +162,7 @@ export default function AuditAnalyticsPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-[#0B0F19] text-muted border-b border-border uppercase font-mono text-[10px]">
+                  <thead className="bg-[#050505] text-muted border-b border-border uppercase font-mono text-[10px]">
                     <tr>
                       <th className="py-3 px-4">Timestamp (UTC)</th>
                       <th className="py-3 px-4">Staff Actor</th>
@@ -273,7 +273,7 @@ export default function AuditAnalyticsPage() {
                         </span>
                         <span className="font-mono text-accent">{cat.count} ticket(s)</span>
                       </div>
-                      <div className="w-full h-2 rounded-full bg-[#0B0F19] overflow-hidden">
+                      <div className="w-full h-2 rounded-full bg-[#050505] overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-accent to-accent-light rounded-full transition-all duration-500"
                           style={{ width: `${Math.max(percentage, 8)}%` }}
@@ -291,7 +291,7 @@ export default function AuditAnalyticsPage() {
               <div className="grid grid-cols-7 gap-2 text-center pt-4">
                 {analytics.volumeHistory.map((d) => (
                   <div key={d.date} className="space-y-2">
-                    <div className="h-28 bg-[#0B0F19] rounded-lg border border-border flex items-end justify-center p-2">
+                    <div className="h-28 bg-[#050505] rounded-lg border border-border flex items-end justify-center p-2">
                       <div
                         className="w-full bg-accent/70 hover:bg-accent rounded transition-all"
                         style={{ height: `${Math.min(Math.max(d.count * 20, 10), 100)}%` }}
