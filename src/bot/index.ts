@@ -42,13 +42,14 @@ client.once(Events.ClientReady, async (readyClient) => {
           await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body });
           console.log(`✅ Successfully registered slash commands for guild: ${guildId}`);
         } catch (guildErr: any) {
-          console.warn(`⚠️ Guild-specific command registration notice (${guildErr?.message}). Registering global application commands...`);
-          await rest.put(Routes.applicationCommands(clientId), { body });
-          console.log("✅ Successfully registered global slash commands.");
+          console.warn(`⚠️ Guild-specific command registration notice (${guildErr?.message}).`);
         }
-      } else {
+      }
+      try {
         await rest.put(Routes.applicationCommands(clientId), { body });
         console.log("✅ Successfully registered global slash commands.");
+      } catch (globalErr: any) {
+        console.warn("⚠️ Global command registration notice:", globalErr?.message);
       }
     } catch (err) {
       console.error("❌ Failed to register Discord slash commands:", err);
@@ -69,8 +70,14 @@ client.once(Events.ClientReady, async (readyClient) => {
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (interaction.isChatInputCommand()) {
+      console.log(
+        `[Discord Gateway] Slash command: /${interaction.commandName} from ${interaction.user.tag} (${interaction.user.id}) in guild ${interaction.guildId}`
+      );
       await handleSlashCommand(interaction);
     } else if (interaction.isButton()) {
+      console.log(
+        `[Discord Gateway] Button clicked: ${interaction.customId} by ${interaction.user.tag} (${interaction.user.id})`
+      );
       await handleButtonInteraction(interaction);
     }
   } catch (err) {

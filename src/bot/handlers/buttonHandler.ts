@@ -1,4 +1,12 @@
-import { ButtonInteraction, EmbedBuilder } from "discord.js";
+import {
+  ButtonInteraction,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ChannelType,
+  PermissionFlagsBits,
+} from "discord.js";
 import { prisma } from "../../lib/prisma";
 import { escalateTicket } from "../../lib/escalation";
 import { generateTicketTranscript } from "../../lib/transcripts";
@@ -131,6 +139,190 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
       .setTimestamp();
 
     await interaction.editReply({ embeds: [embed] });
+    return;
+  }
+
+  // Handle support ticket creation via button panel
+  if (customId.startsWith("ticket_create_")) {
+    await interaction.deferReply({ ephemeral: true });
+    const categorySlug = customId.replace("ticket_create_", "");
+    const guild = interaction.guild;
+
+    if (!guild) {
+      await interaction.editReply({ content: "❌ Tickets can only be created inside the server." });
+      return;
+    }
+
+    // Check user active ticket limit
+    const activeTicketsCount = await prisma.ticket.count({
+      where: {
+        customerDiscordId: interaction.user.id,
+        status: { in: ["OPEN", "AWAITING_STAFF", "STAFF_REPLY"] },
+      },
+    });
+
+    const guildConfig = await prisma.guildConfig.findFirst({
+      where: { guildId: guild.id },
+    });
+    const maxAllowed = guildConfig?.maxTicketsPerUser || 3;
+
+    if (activeTicketsCount >= maxAllowed) {
+      await interaction.editReply({
+        content: `❌ You already have **${activeTicketsCount} active ticket(s)**. Maximum allowed is **${maxAllowed}**. Please resolve or close your previous tickets first.`,
+      });
+      return;
+    }
+
+    let category = await prisma.ticketCategory.findUnique({
+      where: { slug: categorySlug },
+    });
+
+    if (!category) {
+      category = await prisma.ticketCategory.findFirst({
+        where: { isActive: true },
+        orderBy: { order: "asc" },
+      });
+    }
+
+    if (!category) {
+      await interaction.editReply({ content: "❌ No ticket category configured in the system." });
+      return;
+    }
+
+    // Determine next ticket number
+    const highestTicket = await prisma.ticket.findFirst({
+      orderBy: { ticketNumber: "desc" },
+    });
+    const nextNumber = (highestTicket?.ticketNumber || 1000) + 1;
+    const channelName = `ticket-${nextNumber}`;
+
+    // Create private ticket text channel
+    let channel;
+    try {
+      const parentId = guildConfig?.ticketCategoryId || undefined;
+      channel = await guild.channels.create({
+        name: channelName,
+        type: ChannelType.GuildText,
+        parent: parentId,
+        permissionOverwrites: [
+          {
+            id: guild.id, // @everyone
+            deny: [PermissionFlagsBits.ViewChannel],
+          },
+          {
+            id: interaction.user.id,
+            allow: [
+              PermissionFlagsBits.ViewChannel,
+              PermissionFlagsBits.SendMessages,
+              PermissionFlagsBits.AttachFiles,
+              PermissionFlagsBits.ReadMessageHistory,
+              PermissionFlagsBits.EmbedLinks,
+            ],
+          },
+          {
+            id: guild.client.user.id,
+            allow: [
+              PermissionFlagsBits.ViewChannel,
+              PermissionFlagsBits.SendMessages,
+              PermissionFlagsBits.ManageChannels,
+              PermissionFlagsBits.EmbedLinks,
+              PermissionFlagsBits.AttachFiles,
+            ],
+          },
+        ],
+      });
+    } catch (e: any) {
+      try {
+        channel = await guild.channels.create({
+          name: channelName,
+          type: ChannelType.GuildText,
+        });
+      } catch (err: any) {
+        await interaction.editReply({
+          content: `❌ Failed to create ticket channel: ${err?.message || err}`,
+        });
+        return;
+      }
+    }
+
+    // Save ticket in database
+    const ticket = await prisma.ticket.create({
+      data: {
+        ticketNumber: nextNumber,
+        title: `${category.name} Issue`,
+        categoryId: category.id,
+        channelId: channel.id,
+        customerDiscordId: interaction.user.id,
+        customerUsername: interaction.user.username,
+        customerAvatar: interaction.user.displayAvatarURL(),
+        priority: category.defaultPriority || "MEDIUM",
+        status: "OPEN",
+        messages: {
+          create: {
+            senderDiscordId: interaction.user.id,
+            senderUsername: interaction.user.username,
+            senderAvatar: interaction.user.displayAvatarURL(),
+            isStaff: false,
+            content: `Support session initiated by ${interaction.user.username} via Support Desk button.`,
+          },
+        },
+      },
+    });
+
+    // Send Luxury Gold ticket panel in the newly created channel
+    const ticketEmbed = new EmbedBuilder()
+      .setTitle(`🎫 Ticket #${ticket.ticketNumber} • ${category.name}`)
+      .setDescription(
+        `Welcome <@${interaction.user.id}>! A member of the Cavrix Cloud support team has been notified.\n\n` +
+        `**Issue Category:** ${category.emoji || "📁"} ${category.name}\n` +
+        `**Priority:** \`${ticket.priority}\` • **Target SLA:** < 15 minutes\n\n` +
+        `Please describe your issue, provide relevant IP addresses, server IDs, or error logs below. Our staff will respond shortly.`
+      )
+      .setColor(0xD4AF37) // Luxury Gold
+      .addFields(
+        { name: "🛡️ Customer", value: `<@${interaction.user.id}>`, inline: true },
+        { name: "⚡ Status", value: "`OPEN (Awaiting Staff)`", inline: true },
+        { name: "🆔 Ticket Reference", value: `\`#${ticket.ticketNumber}\``, inline: true }
+      )
+      .setFooter({ text: "Cavrix Cloud NetOps • White, Gold & Black Edition" })
+      .setTimestamp();
+
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`ticket_claim_${ticket.id}`)
+        .setLabel("Claim Ticket")
+        .setStyle(ButtonStyle.Success)
+        .setEmoji("⚡"),
+      new ButtonBuilder()
+        .setCustomId(`ticket_escalate_${ticket.id}`)
+        .setLabel("Escalate to Tier-2")
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji("🚨"),
+      new ButtonBuilder()
+        .setCustomId(`ticket_close_${ticket.id}`)
+        .setLabel("Close Ticket")
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji("🔒")
+    );
+
+    await channel.send({
+      content: `<@${interaction.user.id}> Your private support channel is ready!`,
+      embeds: [ticketEmbed],
+      components: [actionRow],
+    });
+
+    await logAuditEvent({
+      actorDiscordId: interaction.user.id,
+      actorUsername: interaction.user.username,
+      action: "TICKET_CREATE",
+      targetType: "TICKET",
+      targetId: ticket.id,
+      details: { ticketNumber: ticket.ticketNumber, channelId: channel.id },
+    });
+
+    await interaction.editReply({
+      content: `✅ Support ticket **#${ticket.ticketNumber}** created successfully! Please head over to <#${channel.id}>.`,
+    });
     return;
   }
 

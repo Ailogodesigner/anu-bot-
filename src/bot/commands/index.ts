@@ -124,6 +124,36 @@ export const slashCommands = [
     .addSubcommand((sub) => sub.setName("leaderboard").setDescription("View staff rankings for server 1528401268354056293")),
 
   new SlashCommandBuilder()
+    .setName("app-admin")
+    .setDescription("Cavrix Bot Administration & Server Configuration")
+    .addSubcommand((sub) =>
+      sub
+        .setName("dashboard")
+        .setDescription("Open the web control panel dashboard link")
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("setup")
+        .setDescription("Auto-configure ticket categories, channels, and permissions for server 1528401268354056293")
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("panel")
+        .setDescription("Send the ticket creation button panel in this channel")
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("verify")
+        .setDescription("Send the member verification button panel in this channel")
+    ),
+
+  new SlashCommandBuilder()
+    .setName("admin")
+    .setDescription("Quick alias for app-admin commands")
+    .addSubcommand((sub) => sub.setName("dashboard").setDescription("Open the web control panel dashboard link"))
+    .addSubcommand((sub) => sub.setName("setup").setDescription("Auto-configure ticket categories and channels")),
+
+  new SlashCommandBuilder()
     .setName("help")
     .setDescription("View command instructions and VPS support guidelines"),
 ];
@@ -598,6 +628,234 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
     }
   }
 
+  if (commandName === "app-admin" || commandName === "admin" || commandName === "app_admin") {
+    await interaction.deferReply({ ephemeral: true });
+    const sub = interaction.options.getSubcommand();
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3005";
+
+    if (sub === "dashboard") {
+      const embed = new EmbedBuilder()
+        .setTitle("👑 Cavrix Bot Control Panel")
+        .setDescription(
+          `**Server 1528401268354056293 Management Console**\n\nDirectly manage ticket queues, live staff shifts, response telemetry, embed dispatches, and diagnostics.`
+        )
+        .setColor(0xD4AF37) // Luxury Gold
+        .addFields(
+          { name: "🌐 Control Panel URL", value: `[${appUrl}/dashboard](${appUrl}/dashboard)`, inline: false },
+          { name: "🛡️ Server ID", value: `\`1528401268354056293\``, inline: true },
+          { name: "⚡ Gateway Status", value: `\`ONLINE & ACTIVE\``, inline: true },
+          { name: "🔐 Staff Access", value: `\`ADMIN / NETOPS\``, inline: true }
+        )
+        .setFooter({ text: "Cavrix Cloud Control Panel • White, Gold & Black Edition" })
+        .setTimestamp();
+
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setLabel("Open Web Dashboard")
+          .setStyle(ButtonStyle.Link)
+          .setURL(`${appUrl}/dashboard`),
+        new ButtonBuilder()
+          .setLabel("Staff Login")
+          .setStyle(ButtonStyle.Link)
+          .setURL(`${appUrl}/login`)
+      );
+
+      await interaction.editReply({ embeds: [embed], components: [row] });
+      return;
+    }
+
+    if (sub === "setup") {
+      const guild = interaction.guild;
+      if (!guild) {
+        await interaction.editReply({ content: "❌ This command must be executed within a Discord server." });
+        return;
+      }
+
+      // Check admin perms
+      const isOwnerOrAdmin =
+        interaction.memberPermissions?.has("Administrator") ||
+        interaction.user.id === guild.ownerId;
+
+      if (!isOwnerOrAdmin) {
+        await interaction.editReply({
+          content: "❌ Administrator permission is required to run server setup.",
+        });
+        return;
+      }
+
+      // 1. Locate or create Ticket Category
+      let ticketCategory = guild.channels.cache.find(
+        (c) =>
+          c.type === ChannelType.GuildCategory &&
+          (c.name.toLowerCase().includes("ticket") || c.name.toLowerCase().includes("cavrix"))
+      );
+      if (!ticketCategory) {
+        try {
+          ticketCategory = await guild.channels.create({
+            name: "🎫 ┃ CAVRIX TICKETS",
+            type: ChannelType.GuildCategory,
+          });
+        } catch {
+          // Fallback if bot lacks category permissions
+        }
+      }
+
+      // 2. Locate or create Transcripts channel
+      let transcriptChannel = guild.channels.cache.find(
+        (c) =>
+          c.type === ChannelType.GuildText &&
+          (c.name.includes("transcript") || c.name.includes("archive"))
+      );
+      if (!transcriptChannel && ticketCategory) {
+        try {
+          transcriptChannel = await guild.channels.create({
+            name: "📜-ticket-transcripts",
+            type: ChannelType.GuildText,
+            parent: ticketCategory.id,
+          });
+        } catch {}
+      }
+
+      // 3. Locate or create Audit Log channel
+      let auditChannel = guild.channels.cache.find(
+        (c) =>
+          c.type === ChannelType.GuildText &&
+          (c.name.includes("audit") || c.name.includes("bot-log"))
+      );
+      if (!auditChannel && ticketCategory) {
+        try {
+          auditChannel = await guild.channels.create({
+            name: "🛡️-bot-audit-logs",
+            type: ChannelType.GuildText,
+            parent: ticketCategory.id,
+          });
+        } catch {}
+      }
+
+      // 4. Save to database
+      await prisma.guildConfig.upsert({
+        where: { guildId: guild.id },
+        update: {
+          guildId: guild.id,
+          guildName: guild.name,
+          ticketCategoryId: ticketCategory?.id || null,
+          transcriptChannelId: transcriptChannel?.id || null,
+          auditLogChannelId: auditChannel?.id || null,
+        },
+        create: {
+          guildId: guild.id,
+          guildName: guild.name,
+          ticketCategoryId: ticketCategory?.id || null,
+          transcriptChannelId: transcriptChannel?.id || null,
+          auditLogChannelId: auditChannel?.id || null,
+        },
+      });
+
+      const embed = new EmbedBuilder()
+        .setTitle("✅ Server Auto-Setup Completed")
+        .setDescription(`Successfully linked and auto-configured channels for **${guild.name}** (\`${guild.id}\`):`)
+        .setColor(0xD4AF37) // Luxury Gold
+        .addFields(
+          {
+            name: "📁 Ticket Category",
+            value: ticketCategory ? `<#${ticketCategory.id}> (\`${ticketCategory.name}\`)` : "`Existing / Default`",
+            inline: false,
+          },
+          {
+            name: "📜 Transcripts Channel",
+            value: transcriptChannel ? `<#${transcriptChannel.id}>` : "`Linked to default`",
+            inline: true,
+          },
+          {
+            name: "🛡️ Audit Logs Channel",
+            value: auditChannel ? `<#${auditChannel.id}>` : "`Linked to default`",
+            inline: true,
+          },
+          {
+            name: "🌐 Dashboard Synced",
+            value: `[Open Console](${appUrl}/dashboard)`,
+            inline: true,
+          }
+        )
+        .setFooter({ text: "Cavrix Cloud • Auto Configuration Completed" })
+        .setTimestamp();
+
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
+
+    if (sub === "panel") {
+      const channel = interaction.channel;
+      if (!channel || channel.type !== ChannelType.GuildText) {
+        await interaction.editReply({ content: "❌ Please run this command inside a text channel." });
+        return;
+      }
+
+      const panelEmbed = new EmbedBuilder()
+        .setTitle("🎫 Cavrix Cloud Support Desk")
+        .setDescription(
+          "Welcome to **Cavrix Cloud** support center.\n\nClick a button below to open a private ticket with our team. A dedicated channel with 24/7 SLA monitoring will be generated instantly for you."
+        )
+        .setColor(0xD4AF37)
+        .addFields(
+          {
+            name: "🛠️ Technical / Connectivity",
+            value: "DDoS mitigation, latency, SSH, and server configuration",
+            inline: false,
+          },
+          {
+            name: "💳 Billing & Upgrades",
+            value: "Invoice inquiries, resource upgrades, and order assistance",
+            inline: false,
+          }
+        )
+        .setFooter({ text: "Cavrix Cloud NetOps • 24/7 SLA Protected" });
+
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId("ticket_create_vps-connectivity-network")
+          .setLabel("Open Tech Support Ticket")
+          .setStyle(ButtonStyle.Primary)
+          .setEmoji("🛠️"),
+        new ButtonBuilder()
+          .setCustomId("ticket_create_billing-inquiries")
+          .setLabel("Billing Support")
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji("💳")
+      );
+
+      await channel.send({ embeds: [panelEmbed], components: [row] });
+      await interaction.editReply({ content: "✅ Support ticket panel dispatched to this channel!" });
+      return;
+    }
+
+    if (sub === "verify") {
+      const channel = interaction.channel;
+      if (!channel || channel.type !== ChannelType.GuildText) {
+        await interaction.editReply({ content: "❌ Please run this command inside a text channel." });
+        return;
+      }
+
+      const verifyEmbed = new EmbedBuilder()
+        .setTitle("🛡️ Member Verification")
+        .setDescription("Welcome to **Cavrix Cloud**! Click the button below to verify your account and unlock access to all server channels.")
+        .setColor(0xD4AF37)
+        .setFooter({ text: "Cavrix Cloud Security System" });
+
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId("verify_member")
+          .setLabel("Verify Account")
+          .setStyle(ButtonStyle.Success)
+          .setEmoji("✅")
+      );
+
+      await channel.send({ embeds: [verifyEmbed], components: [row] });
+      await interaction.editReply({ content: "✅ Verification panel dispatched to this channel!" });
+      return;
+    }
+  }
+
   if (commandName === "help") {
     const embed = new EmbedBuilder()
       .setTitle("Cavrix Cloud Support Bot - User Guide")
@@ -614,5 +872,14 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
     return;
+  }
+
+  // Graceful fallback for any other command (e.g. legacy global commands)
+  if (!interaction.replied && !interaction.deferred) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3005";
+    await interaction.reply({
+      content: `⚡ **Cavrix Cloud Bot**: Command \`/${commandName}\` acknowledged. Use \`/app-admin dashboard\` or \`/app-admin setup\` to manage the server, or open the [Cavrix Control Panel](${appUrl}/dashboard).`,
+      ephemeral: true,
+    });
   }
 }
