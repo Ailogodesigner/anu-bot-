@@ -479,11 +479,18 @@ if (!globalForBot.__discordClient) {
     } catch {}
   });
 
-  // Launch client if token is present
+  // Launch client if token is present with resilient auto-retry
   if (token && token !== "your_discord_bot_token_here") {
-    client.login(token).catch((err) => {
-      console.error("❌ Failed to log into Discord Gateway:", err);
-    });
+    const attemptLogin = async () => {
+      try {
+        await client.login(token);
+      } catch (err: any) {
+        console.error("❌ Failed to log into Discord Gateway:", err?.message || err);
+        console.log("🔄 Retrying Discord Gateway connection in 15 seconds...");
+        setTimeout(attemptLogin, 15000);
+      }
+    };
+    attemptLogin();
   }
 } else {
   client = globalForBot.__discordClient;
