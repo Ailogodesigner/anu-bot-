@@ -1008,20 +1008,40 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
       .setDescription(desc)
       .setColor(color)
       .addFields(
-        { name: "🛠️ Technical / Connectivity", value: "DDoS mitigation, latency, SSH, and server configuration", inline: false },
-        { name: "💳 Billing & Upgrades", value: "Invoice inquiries, resource upgrades, and order assistance", inline: false }
+        { name: "🛒 Buy", value: "Purchase VPS hosting, dedicated server nodes & custom upgrades", inline: false },
+        { name: "💬 Support", value: "General questions, billing assistance, and account guidance", inline: false },
+        { name: "🎁 Claim", value: "Claim giveaway prizes, event rewards, invite perks & VIP roles", inline: false },
+        { name: "⚙️ Technical Issues", value: "DDoS mitigation, latency, SSH access & server troubleshooting", inline: false },
+        { name: "📢 Promotion", value: "Partnership inquiries, sponsorships, bot invites & collabs", inline: false }
       )
-      .setFooter({ text: "Cavrix Cloud NetOps • 24/7 SLA Protected" });
+      .setFooter({ text: "Cavrix Cloud Operations • 24/7 SLA Protected" });
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId("ticket_create_vps-connectivity-network")
-        .setLabel("Open Tech Support Ticket")
+        .setCustomId("ticket_create_buy")
+        .setLabel("Buy")
+        .setEmoji("🛒")
+        .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId("ticket_create_support")
+        .setLabel("Support")
+        .setEmoji("💬")
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
-        .setCustomId("ticket_create_billing-inquiries")
-        .setLabel("Billing & Upgrade Support")
-        .setStyle(ButtonStyle.Success)
+        .setCustomId("ticket_create_claim")
+        .setLabel("Claim")
+        .setEmoji("🎁")
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId("ticket_create_technical-issues")
+        .setLabel("Technical Issues")
+        .setEmoji("⚙️")
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId("ticket_create_promotion")
+        .setLabel("Promotion")
+        .setEmoji("📢")
+        .setStyle(ButtonStyle.Secondary)
     );
 
     await (interaction.channel as any).send({ embeds: [panelEmbed], components: [row] });
@@ -1202,20 +1222,40 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
         .setDescription(desc)
         .setColor(color)
         .addFields(
-          { name: "🛠️ Technical / Connectivity", value: "DDoS mitigation, latency, SSH, and server configuration", inline: false },
-          { name: "💳 Billing & Upgrades", value: "Invoice inquiries, resource upgrades, and order assistance", inline: false }
+          { name: "🛒 Buy", value: "Purchase VPS hosting, dedicated server nodes & custom upgrades", inline: false },
+          { name: "💬 Support", value: "General questions, billing assistance, and account guidance", inline: false },
+          { name: "🎁 Claim", value: "Claim giveaway prizes, event rewards, invite perks & VIP roles", inline: false },
+          { name: "⚙️ Technical Issues", value: "DDoS mitigation, latency, SSH access & server troubleshooting", inline: false },
+          { name: "📢 Promotion", value: "Partnership inquiries, sponsorships, bot invites & collabs", inline: false }
         )
-        .setFooter({ text: "Cavrix Cloud NetOps • 24/7 SLA Protected" });
+        .setFooter({ text: "Cavrix Cloud Operations • 24/7 SLA Protected" });
 
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
-          .setCustomId("ticket_create_vps-connectivity-network")
-          .setLabel("Open Tech Support Ticket")
+          .setCustomId("ticket_create_buy")
+          .setLabel("Buy")
+          .setEmoji("🛒")
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId("ticket_create_support")
+          .setLabel("Support")
+          .setEmoji("💬")
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
-          .setCustomId("ticket_create_billing-inquiries")
-          .setLabel("Billing & Upgrade Support")
-          .setStyle(ButtonStyle.Success)
+          .setCustomId("ticket_create_claim")
+          .setLabel("Claim")
+          .setEmoji("🎁")
+          .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId("ticket_create_technical-issues")
+          .setLabel("Technical Issues")
+          .setEmoji("⚙️")
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId("ticket_create_promotion")
+          .setLabel("Promotion")
+          .setEmoji("📢")
+          .setStyle(ButtonStyle.Secondary)
       );
 
       await (interaction.channel as any).send({ embeds: [panelEmbed], components: [row] });

@@ -41,54 +41,67 @@ async function main() {
 
   // 2. Ticket Categories
   await prisma.ticketCategory.upsert({
-    where: { slug: "vps-connectivity-network" },
-    update: {},
+    where: { slug: "buy" },
+    update: { name: "Order & Purchases", emoji: "🛒", order: 1 },
     create: {
-      name: "VPS Connectivity & Network",
-      slug: "vps-connectivity-network",
-      description: "DDoS attacks, packet loss, latency spikes, BGP routing and ping timeouts",
-      emoji: "🌐",
-      defaultPriority: "URGENT",
+      name: "Order & Purchases",
+      slug: "buy",
+      description: "Purchase custom VPS hosting, dedicated server nodes & add-ons",
+      emoji: "🛒",
+      defaultPriority: "HIGH",
       order: 1,
     },
   });
 
   await prisma.ticketCategory.upsert({
-    where: { slug: "ssh-access-firewall" },
-    update: {},
+    where: { slug: "support" },
+    update: { name: "General Support", emoji: "💬", order: 2 },
     create: {
-      name: "SSH Access & Firewall",
-      slug: "ssh-access-firewall",
-      description: "Port 22 connection refused, UFW firewall locks, and public key auth issues",
-      emoji: "🔐",
-      defaultPriority: "HIGH",
+      name: "General Support",
+      slug: "support",
+      description: "Account assistance, billing questions, and general guidance",
+      emoji: "💬",
+      defaultPriority: "MEDIUM",
       order: 2,
     },
   });
 
   await prisma.ticketCategory.upsert({
-    where: { slug: "resource-performance" },
-    update: {},
+    where: { slug: "claim" },
+    update: { name: "Claim Rewards", emoji: "🎁", order: 3 },
     create: {
-      name: "Resource & Performance (OOM/CPU)",
-      slug: "resource-performance",
-      description: "Kernel Out-Of-Memory kills, swap depletion, and NVMe I/O bottlenecks",
-      emoji: "⚡",
+      name: "Claim Rewards",
+      slug: "claim",
+      description: "Claim giveaway prizes, event rewards, invite perks & VIP roles",
+      emoji: "🎁",
       defaultPriority: "MEDIUM",
       order: 3,
     },
   });
 
   await prisma.ticketCategory.upsert({
-    where: { slug: "billing-inquiries" },
-    update: {},
+    where: { slug: "technical-issues" },
+    update: { name: "Technical Issues", emoji: "⚙️", order: 4 },
     create: {
-      name: "Billing & Invoices",
-      slug: "billing-inquiries",
-      description: "Crypto payments, invoice receipts, plan upgrades and renewals",
-      emoji: "💳",
-      defaultPriority: "LOW",
+      name: "Technical Issues",
+      slug: "technical-issues",
+      description: "DDoS mitigation, latency, SSH access & server troubleshooting",
+      emoji: "⚙️",
+      defaultPriority: "URGENT",
       order: 4,
+    },
+  });
+
+  await prisma.ticketCategory.upsert({
+    where: { slug: "promotion" },
+    update: { name: "Promotion & Collab", emoji: "📢", order: 5 },
+    create: {
+      name: "Promotion & Collab",
+      slug: "promotion",
+      description: "Partnership inquiries, sponsorships, bot invites & collabs",
+      emoji: "📢",
+      defaultPriority: "LOW",
+      order: 5,
     },
   });
 

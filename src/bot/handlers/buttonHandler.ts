@@ -194,7 +194,16 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
       orderBy: { ticketNumber: "desc" },
     });
     const nextNumber = (highestTicket?.ticketNumber || 1000) + 1;
-    const channelName = `ticket-${nextNumber}`;
+    
+    // Clean prefix for department channels (e.g. buy-1001, claim-1002, tech-1003)
+    let channelPrefix = "ticket";
+    if (categorySlug === "buy") channelPrefix = "buy";
+    else if (categorySlug === "support") channelPrefix = "support";
+    else if (categorySlug === "claim") channelPrefix = "claim";
+    else if (categorySlug === "technical-issues" || categorySlug === "vps-connectivity-network") channelPrefix = "tech";
+    else if (categorySlug === "promotion") channelPrefix = "promo";
+
+    const channelName = `${channelPrefix}-${nextNumber}`;
 
     // Create private ticket text channel
     let channel;
@@ -269,6 +278,20 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
       },
     });
 
+    // Department specific instructions
+    let specificGuide = "Please describe your issue, provide relevant IP addresses, server IDs, or error logs below. Our staff will respond shortly.";
+    if (categorySlug === "buy") {
+      specificGuide = "🛒 **Order Desk:** Please state the VPS specifications, plan tier, or server nodes you want to purchase, along with your preferred payment method (UPI, Crypto, Card, PayPal). A sales agent will confirm your order details!";
+    } else if (categorySlug === "support") {
+      specificGuide = "💬 **General Support:** How can our support team assist you today? Please explain your question, billing invoice, or account details below.";
+    } else if (categorySlug === "claim") {
+      specificGuide = "🎁 **Reward Claim Desk:** Congratulations! Please provide the link to the giveaway or event, a screenshot of your winning announcement, and the username or server ID you want the prize delivered to.";
+    } else if (categorySlug === "technical-issues" || categorySlug === "vps-connectivity-network") {
+      specificGuide = "⚙️ **Technical & NetOps:** Please specify your server IP, node location, operating system, and attach any relevant logs, traceroutes, or error messages.";
+    } else if (categorySlug === "promotion") {
+      specificGuide = "📢 **Promotion & Partnerships:** Welcome! Please share your platform link (YouTube, Twitch, Discord server), your current audience metrics, and your proposed collaboration format.";
+    }
+
     // Send Luxury Gold ticket panel in the newly created channel
     const ticketEmbed = new EmbedBuilder()
       .setTitle(`🎫 Ticket #${ticket.ticketNumber} • ${category.name}`)
@@ -276,7 +299,7 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
         `Welcome <@${interaction.user.id}>! A member of the Cavrix Cloud support team has been notified.\n\n` +
         `**Issue Category:** ${category.emoji || "📁"} ${category.name}\n` +
         `**Priority:** \`${ticket.priority}\` • **Target SLA:** < 15 minutes\n\n` +
-        `Please describe your issue, provide relevant IP addresses, server IDs, or error logs below. Our staff will respond shortly.`
+        specificGuide
       )
       .setColor(0xD4AF37) // Luxury Gold
       .addFields(

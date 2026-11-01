@@ -341,7 +341,7 @@ export default function ServerConfigPage() {
               </span>
 
               <div
-                className="p-4 rounded-lg bg-[#0D0D10] border-l-4 space-y-2 shadow-inner"
+                className="p-4 rounded-lg bg-[#0D0D10] border-l-4 space-y-2.5 shadow-inner"
                 style={{ borderLeftColor: config.ticketPanelColor || "#D4AF37" }}
               >
                 <h4 className="text-sm font-bold text-white">
@@ -349,27 +349,73 @@ export default function ServerConfigPage() {
                 </h4>
                 <p className="text-xs text-muted whitespace-pre-wrap">
                   {config.ticketPanelDescription ||
-                    "Click a button below to open a private ticket with our team. A dedicated channel with 24/7 SLA monitoring will be generated instantly for you."}
+                    "Select a department below to create a secure 1-on-1 support ticket."}
                 </p>
 
+                <div className="space-y-1.5 text-[11px] pt-1 border-t border-border/40">
+                  <div>
+                    <span className="font-semibold text-white">🛒 Buy</span>
+                    <p className="text-muted text-[10px]">Purchase VPS hosting, dedicated server nodes & custom upgrades</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-white">💬 Support</span>
+                    <p className="text-muted text-[10px]">General questions, billing assistance, and account guidance</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-white">🎁 Claim</span>
+                    <p className="text-muted text-[10px]">Claim giveaway prizes, event rewards, invite perks & VIP roles</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-white">⚙️ Technical Issues</span>
+                    <p className="text-muted text-[10px]">DDoS mitigation, latency, SSH access & server troubleshooting</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-white">📢 Promotion</span>
+                    <p className="text-muted text-[10px]">Partnership inquiries, sponsorships, bot invites & collabs</p>
+                  </div>
+                </div>
+
                 <div className="pt-2 text-[10px] text-muted font-mono border-t border-border/60">
-                  Cavrix Cloud NetOps • 24/7 SLA Protected
+                  Cavrix Cloud Operations • 24/7 SLA Protected
                 </div>
               </div>
 
-              {/* Interactive buttons mockup */}
-              <div className="flex flex-wrap gap-2 pt-3">
+              {/* Interactive 5-Button Mockup */}
+              <div className="flex flex-wrap gap-1.5 pt-3">
                 <button
                   type="button"
-                  className="px-3 py-1.5 rounded-lg bg-blue-600/90 text-white font-semibold text-xs cursor-default"
+                  className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-default flex items-center gap-1 shadow-subtle"
                 >
-                  Open Tech Support Ticket
+                  <span>🛒</span>
+                  <span>Buy</span>
                 </button>
                 <button
                   type="button"
-                  className="px-3 py-1.5 rounded-lg bg-emerald-600/90 text-white font-semibold text-xs cursor-default"
+                  className="px-2.5 py-1.5 rounded-lg bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold text-xs cursor-default flex items-center gap-1 shadow-subtle"
                 >
-                  Billing & Upgrade Support
+                  <span>💬</span>
+                  <span>Support</span>
+                </button>
+                <button
+                  type="button"
+                  className="px-2.5 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-xs cursor-default flex items-center gap-1 shadow-subtle"
+                >
+                  <span>🎁</span>
+                  <span>Claim</span>
+                </button>
+                <button
+                  type="button"
+                  className="px-2.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs cursor-default flex items-center gap-1 shadow-subtle"
+                >
+                  <span>⚙️</span>
+                  <span>Technical Issues</span>
+                </button>
+                <button
+                  type="button"
+                  className="px-2.5 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-xs cursor-default flex items-center gap-1 shadow-subtle"
+                >
+                  <span>📢</span>
+                  <span>Promotion</span>
                 </button>
               </div>
             </div>
