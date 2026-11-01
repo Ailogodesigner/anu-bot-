@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser, hasRequiredRole } from "@/lib/auth";
 import { getBotClient } from "@/bot/discordService";
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, REST, Routes } from "discord.js";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,22 +18,6 @@ export async function POST(req: NextRequest) {
     if (!channelId) {
       return NextResponse.json(
         { error: "No welcome channel specified. Please set a Welcome Channel ID." },
-        { status: 400 }
-      );
-    }
-
-    const botClient = getBotClient();
-    if (!botClient || !botClient.isReady()) {
-      return NextResponse.json(
-        { error: "Discord Bot is currently offline or reconnecting." },
-        { status: 503 }
-      );
-    }
-
-    const channel = await botClient.channels.fetch(channelId).catch(() => null);
-    if (!channel || !("send" in channel)) {
-      return NextResponse.json(
-        { error: `Could not access channel ${channelId}. Check bot permissions.` },
         { status: 400 }
       );
     }
@@ -56,7 +40,6 @@ export async function POST(req: NextRequest) {
       .setTitle(`[TEST PREVIEW] ${title}`)
       .setDescription(messageText)
       .setColor(color)
-      .setThumbnail(user.avatar || botClient.user?.displayAvatarURL() || "")
       .setFooter({ text: "Cavrix Cloud Welcome Preview • Test Mode" })
       .setTimestamp();
 
@@ -65,7 +48,31 @@ export async function POST(req: NextRequest) {
       embed.setImage(bannerUrl);
     }
 
-    await (channel as any).send({ embeds: [embed] });
+    let sent = false;
+    const botClient = getBotClient();
+
+    if (botClient && botClient.isReady()) {
+      try {
+        const channel = await botClient.channels.fetch(channelId).catch(() => null);
+        if (channel && "send" in channel) {
+          await (channel as any).send({ embeds: [embed] });
+          sent = true;
+        }
+      } catch (e: any) {
+        console.warn("Gateway test welcome notice, trying REST API:", e?.message || e);
+      }
+    }
+
+    if (!sent) {
+      const token = process.env.DISCORD_BOT_TOKEN;
+      if (!token) {
+        return NextResponse.json({ error: "DISCORD_BOT_TOKEN missing." }, { status: 500 });
+      }
+      const rest = new REST({ version: "10" }).setToken(token);
+      await rest.post(Routes.channelMessages(channelId), {
+        body: { embeds: [embed.toJSON()] },
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (err: any) {
@@ -73,4 +80,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
-

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser, hasRequiredRole } from "@/lib/auth";
 import { getBotClient } from "@/bot/discordService";
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, REST, Routes } from "discord.js";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,22 +18,6 @@ export async function POST(req: NextRequest) {
     if (!channelId) {
       return NextResponse.json(
         { error: "No channel ID provided. Please specify a Discord channel ID." },
-        { status: 400 }
-      );
-    }
-
-    const botClient = getBotClient();
-    if (!botClient || !botClient.isReady()) {
-      return NextResponse.json(
-        { error: "Discord Bot is currently offline or reconnecting to gateway." },
-        { status: 503 }
-      );
-    }
-
-    const channel = await botClient.channels.fetch(channelId).catch(() => null);
-    if (!channel || !("send" in channel)) {
-      return NextResponse.json(
-        { error: `Could not access text channel ${channelId}. Check bot permissions.` },
         { status: 400 }
       );
     }
@@ -108,9 +92,47 @@ export async function POST(req: NextRequest) {
         .setStyle(ButtonStyle.Secondary)
     );
 
-    const sent = await (channel as any).send({ embeds: [panelEmbed], components: [row] });
+    let sentMessageId: string | null = null;
+    const botClient = getBotClient();
 
-    // Save channel ID if updated
+    // 1. Try via Gateway Client if connected
+    if (botClient && botClient.isReady()) {
+      try {
+        const channel = await botClient.channels.fetch(channelId).catch(() => null);
+        if (channel && "send" in channel) {
+          const sent = await (channel as any).send({ embeds: [panelEmbed], components: [row] });
+          sentMessageId = sent.id;
+        }
+      } catch (err: any) {
+        console.warn("Gateway send notice, trying REST API:", err?.message || err);
+      }
+    }
+
+    // 2. Direct Discord REST API fallback (Always works via HTTPS without WebSocket gateway)
+    if (!sentMessageId) {
+      const token = process.env.DISCORD_BOT_TOKEN;
+      if (!token) {
+        return NextResponse.json({ error: "DISCORD_BOT_TOKEN is missing." }, { status: 500 });
+      }
+      try {
+        const rest = new REST({ version: "10" }).setToken(token);
+        const res: any = await rest.post(Routes.channelMessages(channelId), {
+          body: {
+            embeds: [panelEmbed.toJSON()],
+            components: [row.toJSON()],
+          },
+        });
+        sentMessageId = res?.id;
+      } catch (restErr: any) {
+        console.error("REST API dispatch error:", restErr);
+        return NextResponse.json(
+          { error: `Discord API error: ${restErr?.message || "Failed to post message to channel"}. Please check bot channel permissions.` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Save channel ID in database
     if (config) {
       await prisma.guildConfig.update({
         where: { id: config.id },
@@ -120,7 +142,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      messageId: sent.id,
+      messageId: sentMessageId,
       channelId,
     });
   } catch (err: any) {

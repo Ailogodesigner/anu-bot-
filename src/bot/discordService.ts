@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, EmbedBuilder, TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { Client, GatewayIntentBits, EmbedBuilder, TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, REST, Routes } from "discord.js";
 import { prisma } from "../lib/prisma";
 
 export interface SendEmbedOptions {
@@ -17,11 +17,16 @@ export interface SendEmbedOptions {
 let botClient: Client | null = null;
 
 export function getBotClient(): Client | null {
+  const globalClient = (globalThis as any).__discordClient;
+  if (globalClient) {
+    return globalClient;
+  }
   return botClient;
 }
 
 export function setBotClient(client: Client | null) {
   botClient = client;
+  (globalThis as any).__discordClient = client;
 }
 
 /**
@@ -73,27 +78,37 @@ export function buildDiscordEmbed(options: SendEmbedOptions): EmbedBuilder {
 }
 
 /**
- * Dispatch an embed to a Discord channel
+ * Dispatch an embed to a Discord channel (with instant REST fallback)
  */
 export async function dispatchEmbedToDiscord(options: SendEmbedOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  if (!botClient || !botClient.isReady()) {
-    return {
-      success: false,
-      error: "Discord Bot is not currently online or connected to the Discord Gateway.",
-    };
+  const client = getBotClient();
+
+  if (client && client.isReady()) {
+    try {
+      const channel = await client.channels.fetch(options.channelId);
+      if (channel && channel instanceof TextChannel) {
+        const embed = buildDiscordEmbed(options);
+        const sent = await channel.send({ embeds: [embed] });
+        return { success: true, messageId: sent.id };
+      }
+    } catch (e: any) {
+      console.warn("Gateway channel dispatch notice, falling back to REST API:", e?.message || e);
+    }
   }
 
+  // Resilient fallback using Discord REST API directly (works without WebSocket Gateway)
   try {
-    const channel = await botClient.channels.fetch(options.channelId);
-    if (!channel || !(channel instanceof TextChannel)) {
-      return { success: false, error: "Target channel not found or bot lacks permissions to access it." };
+    const token = process.env.DISCORD_BOT_TOKEN;
+    if (!token) {
+      return { success: false, error: "DISCORD_BOT_TOKEN is not configured." };
     }
-
+    const rest = new REST({ version: "10" }).setToken(token);
     const embed = buildDiscordEmbed(options);
-    const sent = await channel.send({ embeds: [embed] });
-
-    return { success: true, messageId: sent.id };
+    const res: any = await rest.post(Routes.channelMessages(options.channelId), {
+      body: { embeds: [embed.toJSON()] },
+    });
+    return { success: true, messageId: res?.id };
   } catch (err: any) {
-    return { success: false, error: err.message || "Failed to dispatch embed" };
+    return { success: false, error: err?.message || "Failed to dispatch embed to Discord." };
   }
 }
