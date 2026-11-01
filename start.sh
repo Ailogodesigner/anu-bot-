@@ -57,3 +57,4 @@ else
     echo "Tip: Run 'npm install -g pm2' for 24/7 background process management."
     node node_modules/next/dist/bin/next start -p 3005
 fi
+

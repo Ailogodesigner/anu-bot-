@@ -12,3 +12,4 @@ services:
     volumes:
       - ./dev.db:/app/dev.db
       - ./logs:/app/logs
+

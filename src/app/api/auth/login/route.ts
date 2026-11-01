@@ -76,9 +76,10 @@ export async function POST(req: Request) {
       message: "Master authentication successful.",
     });
 
+    const isHttps = process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://") || false;
     response.cookies.set("vps_bot_session", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isHttps,
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: "/",

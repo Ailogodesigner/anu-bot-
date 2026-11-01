@@ -19,3 +19,4 @@ RUN npm run build
 EXPOSE 3005
 
 CMD ["node", "node_modules/next/dist/bin/next", "start", "-p", "3005"]
+

@@ -29,3 +29,4 @@ call npm run build
 echo [*] Starting Cavrix Bot ^& Control Panel on http://localhost:3005 ...
 call node node_modules\next\dist\bin\next start -p 3005
 pause
+

@@ -47,9 +47,10 @@ export async function POST(req: Request) {
 
   const token = await createSessionToken(sessionUser);
   const cookieStore = cookies();
+  const isHttps = process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://") || false;
   cookieStore.set("vps_bot_session", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isHttps,
     sameSite: "lax",
     path: "/",
     maxAge: 7 * 24 * 3600,
