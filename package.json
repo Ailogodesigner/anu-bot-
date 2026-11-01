@@ -2,6 +2,7 @@
   "name": "anu-vps-bot-dashboard",
   "version": "1.0.0",
   "private": true,
+  "main": "index.js",
   "description": "Premium VPS Hosting Discord Bot & Enterprise Management Dashboard",
   "scripts": {
     "dev": "node node_modules/next/dist/bin/next dev -p 3005",

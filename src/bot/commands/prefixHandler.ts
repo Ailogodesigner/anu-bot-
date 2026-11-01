@@ -654,3 +654,4 @@ export async function handlePrefixCommand(message: Message, prefix: string) {
     return;
   }
 }
+
