@@ -763,7 +763,7 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
   if (commandName === "owner" || commandName === "app-admin" || commandName === "admin" || commandName === "app_admin") {
     await interaction.deferReply({ ephemeral: true });
     const sub = interaction.options.getSubcommand();
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3005";
+    const appUrl = process.env.RENDER_EXTERNAL_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3005";
 
     if (sub === "dashboard") {
       const embed = new EmbedBuilder()
@@ -1446,7 +1446,7 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
 
   // Graceful fallback for any other command (e.g. legacy global commands)
   if (!interaction.replied && !interaction.deferred) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3005";
+    const appUrl = process.env.RENDER_EXTERNAL_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3005";
     await interaction.reply({
       content: `⚡ **Cavrix Cloud Bot**: Command \`/${commandName}\` acknowledged. Use \`/app-admin dashboard\` or \`/app-admin setup\` to manage the server, or open the [Cavrix Control Panel](${appUrl}/dashboard).`,
       ephemeral: true,

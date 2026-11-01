@@ -38,7 +38,7 @@ export async function GET() {
         heapUsedMB: Math.round(memUsage.heapUsed / 1024 / 1024),
         heapTotalMB: Math.round(memUsage.heapTotal / 1024 / 1024),
         port: process.env.PORT || 3005,
-        appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3005",
+        appUrl: process.env.RENDER_EXTERNAL_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3005",
       },
       discord: {
         connected: !!botClient?.isReady(),
