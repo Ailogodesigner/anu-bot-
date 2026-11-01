@@ -32,6 +32,7 @@ model GuildConfig {
   id                      String   @id @default(uuid())
   guildId                 String   @unique
   guildName               String
+  prefix                  String   @default("!")
   ticketCategoryId        String?
   transcriptChannelId     String?
   auditLogChannelId       String?
@@ -43,6 +44,18 @@ model GuildConfig {
   autoCloseHours          Int      @default(48)
   enableAiSupport         Boolean  @default(true)
   aiEscalationSensitivity String   @default("NORMAL") // LOW, NORMAL, HIGH
+  welcomeEnabled          Boolean  @default(true)
+  welcomeChannelId        String?
+  welcomeTitle            String?  @default("Welcome to Cavrix Cloud")
+  welcomeMessage          String?  @default("Welcome {user} to {server}!")
+  welcomeBannerUrl        String?
+  welcomeThumbnailUrl     String?
+  welcomeColor            String   @default("#D4AF37")
+  autoRoleId              String?
+  ticketPanelTitle        String?  @default("Cavrix Cloud Support Desk")
+  ticketPanelDescription  String?  @default("Select a department below to create a secure 1-on-1 support ticket.")
+  ticketPanelColor        String   @default("#D4AF37")
+  ticketPanelChannelId    String?
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }
@@ -279,3 +292,136 @@ model ScheduledJob {
   @@index([status])
   @@index([runAt])
 }
+
+model StaffCommandAudit {
+  id              String   @id @default(uuid())
+  staffDiscordId  String
+  staffUsername   String
+  commandName     String
+  targetDiscordId String?
+  targetUsername  String?
+  guildId         String?
+  channelId       String?
+  channelName     String?
+  parameters      String?  // JSON or text of arguments
+  executionSource String   @default("DISCORD") // DISCORD, WEB_DASHBOARD
+  createdAt       DateTime @default(now())
+
+  @@index([staffDiscordId])
+  @@index([targetDiscordId])
+  @@index([commandName])
+  @@index([createdAt])
+}
+
+model Giveaway {
+  id                String   @id @default(uuid())
+  guildId           String
+  channelId         String
+  messageId         String?
+  prize             String
+  description       String?
+  winnerCount       Int      @default(1)
+  endsAt            DateTime
+  status            String   @default("ACTIVE") // ACTIVE, ENDED, REROLLED, CANCELLED
+  hostedByDiscordId String
+  hostedByUsername  String
+  winners           String?  // JSON string array of winner Discord IDs
+  participants      String?  // JSON string array of participant Discord IDs
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([guildId])
+  @@index([status])
+  @@index([endsAt])
+}
+
+model PaymentQr {
+  id             String   @id @default(uuid())
+  title          String
+  provider       String   // UPI, CRYPTO, PAYPAL, STRIPE, BANK, OTHER
+  accountAddress String
+  qrImageUrl     String?
+  note           String?
+  isActive       Boolean  @default(true)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([provider])
+  @@index([isActive])
+}
+
+model RandomLink {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  targetUrl   String
+  clicksCount Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+model DeletionLog {
+  id                String   @id @default(uuid())
+  type              String   // MESSAGE, BULK_MESSAGE, CHANNEL
+  guildId           String?
+  channelId         String?
+  channelName       String?
+  authorDiscordId   String?
+  authorUsername    String?
+  deletedByDiscordId String?
+  deletedByUsername  String?
+  content           String?
+  count             Int?     @default(1)
+  attachments       String?  // JSON string
+  createdAt         DateTime @default(now())
+
+  @@index([type])
+  @@index([channelId])
+  @@index([authorDiscordId])
+  @@index([createdAt])
+}
+
+model Punishment {
+  id              String   @id @default(uuid())
+  type            String   // WARN, TIMEOUT, KICK, BAN, UNBAN, UNTIMEOUT
+  guildId         String
+  targetDiscordId String
+  targetUsername  String
+  staffDiscordId  String
+  staffUsername   String
+  reason          String?
+  durationMinutes Int?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([guildId])
+  @@index([type])
+  @@index([targetDiscordId])
+  @@index([staffDiscordId])
+  @@index([createdAt])
+}
+
+model AutoResponse {
+  id              String   @id @default(uuid())
+  guildId         String?
+  trigger         String
+  matchType       String   @default("CONTAINS") // EXACT, CONTAINS, STARTS_WITH, REGEX
+  responseContent String
+  embedTitle      String?
+  embedDescription String?
+  embedColor      String   @default("#D4AF37")
+  isActive        Boolean  @default(true)
+  useCount        Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([trigger])
+  @@index([isActive])
+}
+

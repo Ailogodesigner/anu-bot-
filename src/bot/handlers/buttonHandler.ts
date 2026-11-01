@@ -326,6 +326,55 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
     return;
   }
 
+  // Giveaway Enter Button
+  if (customId.startsWith("giveaway_enter_")) {
+    await interaction.deferReply({ ephemeral: true });
+    const giveawayId = customId.replace("giveaway_enter_", "");
+
+    const giveaway = await prisma.giveaway.findUnique({
+      where: { id: giveawayId },
+    });
+
+    if (!giveaway || giveaway.status !== "ACTIVE") {
+      await interaction.editReply({ content: "❌ This giveaway has ended or does not exist." });
+      return;
+    }
+
+    const participants: string[] = giveaway.participants ? JSON.parse(giveaway.participants) : [];
+
+    if (participants.includes(interaction.user.id)) {
+      await interaction.editReply({
+        content: `ℹ️ You are already entered into this giveaway for **${giveaway.prize}**! Entries: \`${participants.length}\`.`,
+      });
+      return;
+    }
+
+    participants.push(interaction.user.id);
+
+    await prisma.giveaway.update({
+      where: { id: giveaway.id },
+      data: { participants: JSON.stringify(participants) },
+    });
+
+    // Update the button label on the original message if possible
+    try {
+      if (interaction.message) {
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId(`giveaway_enter_${giveaway.id}`)
+            .setLabel(`🎉 Enter Giveaway (${participants.length})`)
+            .setStyle(ButtonStyle.Success)
+        );
+        await interaction.message.edit({ components: [row] });
+      }
+    } catch {}
+
+    await interaction.editReply({
+      content: `🎉 You have successfully entered the giveaway for **${giveaway.prize}**! Best of luck! (Total Entries: \`${participants.length}\`)`,
+    });
+    return;
+  }
+
   // Verification button handler for Cavrix Cloud #verify channel
   if (customId === "verify_member" || customId === "verify_button" || customId.startsWith("verify_")) {
     await interaction.deferReply({ ephemeral: true });

@@ -11,13 +11,17 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCw,
-  Plus,
-  Trash2,
+  Send,
+  Sparkles,
+  UserCheck,
+  LayoutTemplate,
+  MessageSquare,
 } from "lucide-react";
 
 interface GuildConfigData {
   guildId: string;
   guildName: string;
+  prefix: string;
   ticketCategoryId: string | null;
   transcriptChannelId: string | null;
   auditLogChannelId: string | null;
@@ -29,30 +33,39 @@ interface GuildConfigData {
   autoCloseHours: number;
   enableAiSupport: boolean;
   aiEscalationSensitivity: string;
-}
-
-interface CategoryItem {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  emoji: string | null;
-  defaultPriority: string;
+  // Welcome
+  welcomeEnabled: boolean;
+  welcomeChannelId: string | null;
+  welcomeTitle: string | null;
+  welcomeMessage: string | null;
+  welcomeBannerUrl: string | null;
+  welcomeThumbnailUrl: string | null;
+  welcomeColor: string;
+  autoRoleId: string | null;
+  // Ticket Panel
+  ticketPanelTitle: string | null;
+  ticketPanelDescription: string | null;
+  ticketPanelColor: string;
+  ticketPanelChannelId: string | null;
 }
 
 export default function ServerConfigPage() {
   const [config, setConfig] = useState<GuildConfigData | null>(null);
-  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Dispatch states
+  const [dispatchingPanel, setDispatchingPanel] = useState(false);
+  const [dispatchPanelSuccess, setDispatchPanelSuccess] = useState(false);
+  const [testingWelcome, setTestingWelcome] = useState(false);
+  const [testWelcomeSuccess, setTestWelcomeSuccess] = useState(false);
 
   const fetchConfig = async () => {
     try {
       const res = await fetch("/api/config");
       const data = await res.json();
       setConfig(data.guildConfig);
-      setCategories(data.categories || []);
     } catch (err) {
       console.error("Config fetch error:", err);
     } finally {
@@ -87,6 +100,69 @@ export default function ServerConfigPage() {
     }
   };
 
+  const handleDispatchPanel = async () => {
+    if (!config?.ticketPanelChannelId && !config?.transcriptChannelId) {
+      alert("Please configure a Ticket Panel Channel ID below first.");
+      return;
+    }
+    setDispatchingPanel(true);
+    try {
+      const res = await fetch("/api/config/dispatch-panel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channelId: config.ticketPanelChannelId,
+          title: config.ticketPanelTitle,
+          description: config.ticketPanelDescription,
+          color: config.ticketPanelColor,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDispatchPanelSuccess(true);
+        setTimeout(() => setDispatchPanelSuccess(false), 4000);
+      } else {
+        alert(data.error || "Failed to dispatch panel to Discord");
+      }
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setDispatchingPanel(false);
+    }
+  };
+
+  const handleTestWelcome = async () => {
+    if (!config?.welcomeChannelId) {
+      alert("Please configure a Welcome Channel ID below first.");
+      return;
+    }
+    setTestingWelcome(true);
+    try {
+      const res = await fetch("/api/config/test-welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channelId: config.welcomeChannelId,
+          title: config.welcomeTitle,
+          message: config.welcomeMessage,
+          color: config.welcomeColor,
+          bannerUrl: config.welcomeBannerUrl,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTestWelcomeSuccess(true);
+        setTimeout(() => setTestWelcomeSuccess(false), 4000);
+      } else {
+        alert(data.error || "Failed to send test welcome embed");
+      }
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setTestingWelcome(false);
+    }
+  };
+
   if (loading || !config) {
     return (
       <div className="p-8 text-center text-xs text-muted flex items-center justify-center gap-2">
@@ -98,250 +174,423 @@ export default function ServerConfigPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Settings className="w-5 h-5 text-accent" />
-            <span>Server Channels, Categories & Guardrails</span>
+      {/* Header Banner */}
+      <div className="p-6 md:p-8 rounded-2xl bg-[#0D0D10] border border-border flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden shadow-card">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="space-y-1 relative z-10">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono px-2.5 py-0.5 rounded bg-accent/15 border border-accent/40 text-accent font-bold">
+              CORE SERVER ARCHITECTURE
+            </span>
+            <span className="text-[11px] font-mono text-muted">Server ID: {config.guildId}</span>
+          </div>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <span>Prefixes, Ticket Panels & Welcome Embeds</span>
           </h1>
-          <p className="text-xs text-muted mt-1">
-            Configure Discord Gateway routing IDs, support role mappings, and customer ticket rate limits.
+          <p className="text-xs text-muted max-w-xl">
+            Configure custom bot prefixes, design and dispatch interactive ticket button panels, and personalize welcome embeds for new members.
           </p>
         </div>
 
         {saveSuccess && (
-          <span className="text-xs text-emerald-400 flex items-center gap-1 font-mono">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Server Settings Saved</span>
+          <span className="text-xs text-emerald-400 flex items-center gap-1.5 font-mono px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Settings Saved to Database</span>
           </span>
         )}
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
-        {/* Discord Channels Routing */}
-        <div className="p-6 rounded-xl bg-card border border-border space-y-4">
+        {/* Section 1: Command Prefix & Identity */}
+        <div className="p-6 rounded-2xl bg-[#0D0D10] border border-border shadow-card space-y-4">
           <div className="flex items-center gap-2 border-b border-border pb-3">
-            <Hash className="w-4 h-4 text-accent" />
-            <span className="text-xs font-bold text-foreground font-mono">DISCORD CHANNEL & CATEGORY ROUTING</span>
+            <Server className="w-4 h-4 text-accent" />
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+              Command Prefix & Bot Identity
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-muted mb-1">Guild / Server Display Name</label>
+              <label className="text-xs font-medium text-muted mb-1 block">Command Prefix *</label>
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  required
+                  maxLength={5}
+                  value={config.prefix || "!"}
+                  onChange={(e) => setConfig({ ...config, prefix: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-lg bg-[#050505] border border-border text-white text-sm font-mono font-bold focus:outline-none focus:border-accent text-accent"
+                />
+              </div>
+              <p className="text-[11px] text-muted mt-1">Commands trigger via {config.prefix || "!"}help, {config.prefix || "!"}ticket, {config.prefix || "!"}pay, etc.</p>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted mb-1 block">Server Name</label>
               <input
                 type="text"
                 value={config.guildName}
                 onChange={(e) => setConfig({ ...config, guildName: e.target.value })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#050505] border border-border text-white text-xs focus:outline-none focus:border-accent"
               />
             </div>
 
             <div>
-              <label className="block text-muted mb-1">Target Discord Server ID (Snowflake)</label>
+              <label className="text-xs font-medium text-muted mb-1 block">Server ID</label>
               <input
                 type="text"
+                disabled
                 value={config.guildId}
-                onChange={(e) => setConfig({ ...config, guildId: e.target.value })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-muted mb-1">Active Ticket Category ID (Parent Category)</label>
-              <input
-                type="text"
-                placeholder="Discord Category Snowflake ID"
-                value={config.ticketCategoryId || ""}
-                onChange={(e) => setConfig({ ...config, ticketCategoryId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
-              />
-              <span className="text-[10px] text-muted-foreground mt-0.5 block">
-                Where dynamic channel per ticket is created
-              </span>
-            </div>
-
-            <div>
-              <label className="block text-muted mb-1">Archived Transcripts Channel ID</label>
-              <input
-                type="text"
-                placeholder="e.g. 990000000000000002"
-                value={config.transcriptChannelId || ""}
-                onChange={(e) => setConfig({ ...config, transcriptChannelId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
-              />
-              <span className="text-[10px] text-muted-foreground mt-0.5 block">
-                Destination for generated HTML / Markdown ticket transcripts
-              </span>
-            </div>
-
-            <div>
-              <label className="block text-muted mb-1">Audit Log Alerts Channel ID</label>
-              <input
-                type="text"
-                placeholder="e.g. 990000000000000003"
-                value={config.auditLogChannelId || ""}
-                onChange={(e) => setConfig({ ...config, auditLogChannelId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-muted mb-1">Primary Announcements Channel ID</label>
-              <input
-                type="text"
-                placeholder="e.g. 990000000000000004"
-                value={config.announcementChannelId || ""}
-                onChange={(e) => setConfig({ ...config, announcementChannelId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#050505] border border-border text-muted font-mono text-xs cursor-not-allowed"
               />
             </div>
           </div>
         </div>
 
-        {/* Discord Role ID Mappings & Escalation Routing */}
-        <div className="p-6 rounded-xl bg-card border border-border space-y-4">
-          <div className="flex items-center gap-2 border-b border-border pb-3">
-            <Shield className="w-4 h-4 text-accent" />
-            <span className="text-xs font-bold text-foreground font-mono">DISCORD ROLE PERMISSIONS & ESCALATIONS</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            <div>
-              <label className="block text-muted mb-1">Administrator Role ID</label>
-              <input
-                type="text"
-                placeholder="Role Snowflake ID"
-                value={config.adminRoleId || ""}
-                onChange={(e) => setConfig({ ...config, adminRoleId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
-              />
+        {/* Section 2: Ticket Panel Customization & Live Dispatch */}
+        <div className="p-6 rounded-2xl bg-[#0D0D10] border border-border shadow-card space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
+            <div className="flex items-center gap-2">
+              <LayoutTemplate className="w-4 h-4 text-accent" />
+              <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+                Support Ticket Desk Panel Customizer
+              </h2>
             </div>
 
-            <div>
-              <label className="block text-muted mb-1">Support Agent Role ID</label>
-              <input
-                type="text"
-                placeholder="Role Snowflake ID"
-                value={config.supportRoleId || ""}
-                onChange={(e) => setConfig({ ...config, supportRoleId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-muted mb-1">Staff Escalation Mention Role ID</label>
-              <input
-                type="text"
-                placeholder="Role Snowflake ID"
-                value={config.escalationRoleId || ""}
-                onChange={(e) => setConfig({ ...config, escalationRoleId: e.target.value || null })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
-              />
-              <span className="text-[10px] text-muted-foreground mt-0.5 block">
-                Mentioned when customer clicks Escalate or AI detects urgency
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Support Automation & Rate Limits */}
-        <div className="p-6 rounded-xl bg-card border border-border space-y-4">
-          <div className="flex items-center gap-2 border-b border-border pb-3">
-            <Layers className="w-4 h-4 text-accent" />
-            <span className="text-xs font-bold text-foreground font-mono">LIMITS & AUTOMATION POLICIES</span>
+            <button
+              type="button"
+              onClick={handleDispatchPanel}
+              disabled={dispatchingPanel}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-black font-bold text-xs hover:bg-accent-hover transition shadow-glow self-start sm:self-auto"
+            >
+              <Send className={`w-3.5 h-3.5 ${dispatchingPanel ? "animate-pulse" : ""}`} />
+              <span>{dispatchingPanel ? "Dispatching..." : "Dispatch Panel to Discord"}</span>
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            <div>
-              <label className="block text-muted mb-1">Max Concurrent Tickets Per User</label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={config.maxTicketsPerUser}
-                onChange={(e) => setConfig({ ...config, maxTicketsPerUser: parseInt(e.target.value) || 3 })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
-              />
+          {dispatchPanelSuccess && (
+            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Ticket button panel dispatched successfully to Discord text channel!</span>
             </div>
+          )}
 
-            <div>
-              <label className="block text-muted mb-1">Auto-Close Inactivity Timeout (Hours)</label>
-              <input
-                type="number"
-                min="12"
-                max="168"
-                value={config.autoCloseHours}
-                onChange={(e) => setConfig({ ...config, autoCloseHours: parseInt(e.target.value) || 48 })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground font-mono focus:outline-none focus:border-accent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-muted mb-1">Escalation Trigger Sensitivity</label>
-              <select
-                value={config.aiEscalationSensitivity}
-                onChange={(e) => setConfig({ ...config, aiEscalationSensitivity: e.target.value })}
-                className="w-full p-2.5 rounded-lg bg-[#050505] border border-border text-foreground focus:outline-none focus:border-accent"
-              >
-                <option value="LOW">Low (Allow more AI attempts)</option>
-                <option value="NORMAL">Normal (Escalate on 2 failures)</option>
-                <option value="HIGH">High (Immediate human handoff)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="pt-2">
-            <label className="flex items-center gap-2 text-xs text-muted cursor-pointer">
-              <input
-                type="checkbox"
-                checked={config.enableAiSupport}
-                onChange={(e) => setConfig({ ...config, enableAiSupport: e.target.checked })}
-                className="accent-accent"
-              />
-              <span className="text-foreground font-medium">
-                Enable AI Support Assistant First-Response in Discord Ticket Channels
-              </span>
-            </label>
-          </div>
-        </div>
-
-        {/* Configured Ticket Categories List */}
-        <div className="p-6 rounded-xl bg-card border border-border space-y-4">
-          <div className="flex items-center justify-between border-b border-border pb-3">
-            <span className="text-xs font-bold text-foreground font-mono">
-              ACTIVE TICKET CATEGORIES ({categories.length})
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            {categories.map((c) => (
-              <div key={c.id} className="p-3.5 rounded-lg bg-[#050505] border border-border space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-foreground flex items-center gap-1.5">
-                    <span>{c.emoji}</span>
-                    <span>{c.name}</span>
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-card text-muted border border-border">
-                    {c.defaultPriority}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted line-clamp-1">{c.description}</p>
-                <div className="text-[10px] text-muted-foreground font-mono">slug: {c.slug}</div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Form Controls */}
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-muted mb-1 block">Panel Embed Title</label>
+                <input
+                  type="text"
+                  value={config.ticketPanelTitle || ""}
+                  onChange={(e) => setConfig({ ...config, ticketPanelTitle: e.target.value })}
+                  placeholder="🎫 Cavrix Cloud Support Desk"
+                  className="w-full px-3.5 py-2 rounded-lg bg-[#050505] border border-border text-white text-xs focus:outline-none focus:border-accent"
+                />
               </div>
-            ))}
+
+              <div>
+                <label className="text-xs font-medium text-muted mb-1 block">Panel Description & Instructions</label>
+                <textarea
+                  rows={3}
+                  value={config.ticketPanelDescription || ""}
+                  onChange={(e) => setConfig({ ...config, ticketPanelDescription: e.target.value })}
+                  placeholder="Click a button below to open a private ticket with our team..."
+                  className="w-full px-3.5 py-2 rounded-lg bg-[#050505] border border-border text-white text-xs focus:outline-none focus:border-accent"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-muted mb-1 block">Panel Embed Color</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={config.ticketPanelColor || "#D4AF37"}
+                      onChange={(e) => setConfig({ ...config, ticketPanelColor: e.target.value })}
+                      className="w-8 h-8 rounded border border-border bg-transparent cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={config.ticketPanelColor || "#D4AF37"}
+                      onChange={(e) => setConfig({ ...config, ticketPanelColor: e.target.value })}
+                      className="flex-1 px-3 py-2 rounded-lg bg-[#050505] border border-border text-white font-mono text-xs uppercase"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-muted mb-1 block">Target Discord Channel ID</label>
+                  <input
+                    type="text"
+                    value={config.ticketPanelChannelId || ""}
+                    onChange={(e) => setConfig({ ...config, ticketPanelChannelId: e.target.value })}
+                    placeholder="e.g. 1507025172845297744"
+                    className="w-full px-3 py-2 rounded-lg bg-[#050505] border border-border text-white font-mono text-xs focus:outline-none focus:border-accent"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Discord Accurate Embed Preview */}
+            <div className="p-4 rounded-xl bg-[#050505] border border-border/80 flex flex-col justify-between">
+              <span className="text-[10px] font-mono text-muted uppercase tracking-wider mb-2 block">
+                Discord Live Embed Preview
+              </span>
+
+              <div
+                className="p-4 rounded-lg bg-[#0D0D10] border-l-4 space-y-2 shadow-inner"
+                style={{ borderLeftColor: config.ticketPanelColor || "#D4AF37" }}
+              >
+                <h4 className="text-sm font-bold text-white">
+                  {config.ticketPanelTitle || "🎫 Cavrix Cloud Support Desk"}
+                </h4>
+                <p className="text-xs text-muted whitespace-pre-wrap">
+                  {config.ticketPanelDescription ||
+                    "Click a button below to open a private ticket with our team. A dedicated channel with 24/7 SLA monitoring will be generated instantly for you."}
+                </p>
+
+                <div className="pt-2 text-[10px] text-muted font-mono border-t border-border/60">
+                  Cavrix Cloud NetOps • 24/7 SLA Protected
+                </div>
+              </div>
+
+              {/* Interactive buttons mockup */}
+              <div className="flex flex-wrap gap-2 pt-3">
+                <button
+                  type="button"
+                  className="px-3 py-1.5 rounded-lg bg-blue-600/90 text-white font-semibold text-xs cursor-default"
+                >
+                  Open Tech Support Ticket
+                </button>
+                <button
+                  type="button"
+                  className="px-3 py-1.5 rounded-lg bg-emerald-600/90 text-white font-semibold text-xs cursor-default"
+                >
+                  Billing & Upgrade Support
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="flex items-center justify-end">
+        {/* Section 3: Embedded Welcome Messages */}
+        <div className="p-6 rounded-2xl bg-[#0D0D10] border border-border shadow-card space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-accent" />
+              <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+                Embedded Welcome Messages
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleTestWelcome}
+                disabled={testingWelcome}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card border border-accent/40 text-white font-medium text-xs hover:border-accent transition"
+              >
+                <span>{testingWelcome ? "Sending..." : "Send Test Welcome"}</span>
+              </button>
+              <label className="flex items-center gap-2 text-xs font-medium text-white cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={config.welcomeEnabled}
+                  onChange={(e) => setConfig({ ...config, welcomeEnabled: e.target.checked })}
+                  className="rounded border-border bg-[#050505] text-accent focus:ring-accent"
+                />
+                <span>Enabled</span>
+              </label>
+            </div>
+          </div>
+
+          {testWelcomeSuccess && (
+            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Test welcome embed sent to Discord channel!</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-muted mb-1 block">Welcome Title</label>
+                <input
+                  type="text"
+                  value={config.welcomeTitle || ""}
+                  onChange={(e) => setConfig({ ...config, welcomeTitle: e.target.value })}
+                  placeholder="Welcome to Cavrix Cloud"
+                  className="w-full px-3.5 py-2 rounded-lg bg-[#050505] border border-border text-white text-xs focus:outline-none focus:border-accent"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-muted mb-1 block">
+                  Greeting Message Body (Supports <code>{`{user}`}</code>, <code>{`{username}`}</code>, <code>{`{server}`}</code>, <code>{`{memberCount}`}</code>)
+                </label>
+                <textarea
+                  rows={3}
+                  value={config.welcomeMessage || ""}
+                  onChange={(e) => setConfig({ ...config, welcomeMessage: e.target.value })}
+                  placeholder="Welcome {user} to {server}! Please read the rules and verify."
+                  className="w-full px-3.5 py-2 rounded-lg bg-[#050505] border border-border text-white text-xs focus:outline-none focus:border-accent"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-muted mb-1 block">Welcome Channel ID</label>
+                  <input
+                    type="text"
+                    value={config.welcomeChannelId || ""}
+                    onChange={(e) => setConfig({ ...config, welcomeChannelId: e.target.value })}
+                    placeholder="e.g. 1507025172845297744"
+                    className="w-full px-3 py-2 rounded-lg bg-[#050505] border border-border text-white font-mono text-xs focus:outline-none focus:border-accent"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-muted mb-1 block">Auto-Assign Role ID</label>
+                  <input
+                    type="text"
+                    value={config.autoRoleId || ""}
+                    onChange={(e) => setConfig({ ...config, autoRoleId: e.target.value })}
+                    placeholder="Optional Role ID"
+                    className="w-full px-3 py-2 rounded-lg bg-[#050505] border border-border text-white font-mono text-xs focus:outline-none focus:border-accent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-muted mb-1 block">Welcome Banner Image URL</label>
+                <input
+                  type="url"
+                  value={config.welcomeBannerUrl || ""}
+                  onChange={(e) => setConfig({ ...config, welcomeBannerUrl: e.target.value })}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full px-3 py-2 rounded-lg bg-[#050505] border border-border text-white text-xs focus:outline-none focus:border-accent"
+                />
+              </div>
+            </div>
+
+            {/* Welcome Embed Preview */}
+            <div className="p-4 rounded-xl bg-[#050505] border border-border/80 flex flex-col justify-between">
+              <span className="text-[10px] font-mono text-muted uppercase tracking-wider mb-2 block">
+                Welcome Embed Preview
+              </span>
+
+              <div
+                className="p-4 rounded-lg bg-[#0D0D10] border-l-4 space-y-2 shadow-inner"
+                style={{ borderLeftColor: config.welcomeColor || "#D4AF37" }}
+              >
+                <h4 className="text-sm font-bold text-white">
+                  {config.welcomeTitle || "Welcome to Cavrix Cloud"}
+                </h4>
+                <p className="text-xs text-muted whitespace-pre-wrap">
+                  {(config.welcomeMessage || "Welcome {user} to {server}!")
+                    .replace(/{user}/g, "@NewMember")
+                    .replace(/{username}/g, "NewMember")
+                    .replace(/{server}/g, config.guildName || "Cavrix Cloud")
+                    .replace(/{memberCount}/g, "1,248")}
+                </p>
+
+                {config.welcomeBannerUrl && (
+                  <div className="pt-2">
+                    <img
+                      src={config.welcomeBannerUrl}
+                      alt="Banner Preview"
+                      className="w-full h-24 object-cover rounded-lg"
+                    />
+                  </div>
+                )}
+
+                <div className="pt-2 text-[10px] text-muted font-mono border-t border-border/60">
+                  {config.guildName || "Cavrix Cloud"} • Member #1,248
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 4: Routing Channels & Escalation Guardrails */}
+        <div className="p-6 rounded-2xl bg-[#0D0D10] border border-border shadow-card space-y-4">
+          <div className="flex items-center gap-2 border-b border-border pb-3">
+            <Hash className="w-4 h-4 text-accent" />
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+              Discord Channel Routing & Guardrails
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs font-medium text-muted mb-1 block">Ticket Category ID</label>
+              <input
+                type="text"
+                value={config.ticketCategoryId || ""}
+                onChange={(e) => setConfig({ ...config, ticketCategoryId: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#050505] border border-border text-white font-mono text-xs focus:outline-none focus:border-accent"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted mb-1 block">Transcripts Channel ID</label>
+              <input
+                type="text"
+                value={config.transcriptChannelId || ""}
+                onChange={(e) => setConfig({ ...config, transcriptChannelId: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#050505] border border-border text-white font-mono text-xs focus:outline-none focus:border-accent"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted mb-1 block">Audit Logs Channel ID</label>
+              <input
+                type="text"
+                value={config.auditLogChannelId || ""}
+                onChange={(e) => setConfig({ ...config, auditLogChannelId: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#050505] border border-border text-white font-mono text-xs focus:outline-none focus:border-accent"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div>
+              <label className="text-xs font-medium text-muted mb-1 block">Max Tickets Per Customer</label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={config.maxTicketsPerUser}
+                onChange={(e) => setConfig({ ...config, maxTicketsPerUser: Number(e.target.value) })}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#050505] border border-border text-white font-mono text-xs focus:outline-none focus:border-accent"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted mb-1 block">Auto-Close Inactive Tickets (Hours)</label>
+              <input
+                type="number"
+                min={1}
+                value={config.autoCloseHours}
+                onChange={(e) => setConfig({ ...config, autoCloseHours: Number(e.target.value) })}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#050505] border border-border text-white font-mono text-xs focus:outline-none focus:border-accent"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Save Bar */}
+        <div className="flex items-center justify-end gap-3 pt-2">
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2.5 rounded-lg bg-accent hover:bg-accent-hover text-black font-semibold text-xs flex items-center gap-1.5 transition shadow-glow"
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-black font-bold text-xs hover:bg-accent-hover transition shadow-glow"
           >
             <Save className="w-4 h-4" />
-            <span>{saving ? "Saving Server Configuration..." : "Save Server Configuration"}</span>
+            <span>{saving ? "Saving Changes..." : "Save Server Configuration"}</span>
           </button>
         </div>
       </form>

@@ -21,6 +21,13 @@ import {
   Menu,
   X,
   Radio,
+  FileCode,
+  Gift,
+  QrCode,
+  Link2,
+  Trash2,
+  Gavel,
+  MessageSquareText,
 } from "lucide-react";
 
 interface UserProfile {
@@ -34,14 +41,17 @@ interface UserProfile {
 const navItems = [
   { href: "/dashboard", label: "Overview & Telemetry", icon: LayoutDashboard },
   { href: "/dashboard/tickets", label: "Ticket Queue", icon: Ticket },
-  { href: "/dashboard/staff", label: "Staff Tracking & Shifts", icon: Users },
-  { href: "/dashboard/ai", label: "AI Knowledge Engine", icon: Bot },
-  { href: "/dashboard/embeds", label: "Discord Embed Builder", icon: LayoutTemplate },
-  { href: "/dashboard/announcements", label: "Broadcast Notices", icon: Megaphone },
-  { href: "/dashboard/config", label: "Server Config", icon: Settings },
-  { href: "/dashboard/audit-logs", label: "Security & Audit Logs", icon: ShieldAlert },
-  { href: "/dashboard/diagnostics", label: "Bot Diagnostics", icon: Activity },
+  { href: "/dashboard/staff-audit", label: "Staff Command Audit", icon: FileCode },
+  { href: "/dashboard/config", label: "Prefix & Panel Config", icon: Settings },
+  { href: "/dashboard/giveaways", label: "Giveaways Manager", icon: Gift },
+  { href: "/dashboard/payments", label: "Payment QR Codes", icon: QrCode },
+  { href: "/dashboard/random-links", label: "Random & Vanity Links", icon: Link2 },
+  { href: "/dashboard/deletions", label: "Deletions & Purge Logs", icon: Trash2 },
+  { href: "/dashboard/punishments", label: "Punishment & Moderation", icon: Gavel },
+  { href: "/dashboard/auto-responses", label: "Auto-Responses", icon: MessageSquareText },
+  { href: "/dashboard/staff", label: "Staff Shifts", icon: Users },
   { href: "/dashboard/hosting", label: "Self-Hosting & Automation", icon: Server },
+  { href: "/dashboard/diagnostics", label: "Bot Diagnostics", icon: Activity },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
